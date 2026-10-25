@@ -20,6 +20,13 @@ npm run preview
 
 Hasil `dist/` dapat di-host sebagai situs statis, termasuk dalam subfolder. Build menyalin subset aset yang digunakan; koleksi lengkap tetap berada di `public/lib/`.
 
+## GitHub Pages
+
+Situs dipublikasikan di https://oskhar.github.io/ dari repository `oskhar/oskhar.github.io`.
+Workflow `.github/workflows/deploy-pages.yml` berjalan otomatis ketika branch `main` diperbarui, atau melalui **Actions → Deploy portfolio to GitHub Pages → Run workflow**.
+Workflow menggunakan Node.js 22, menjalankan `npm ci` dan `npm run build`, lalu menerbitkan isi `dist/` melalui GitHub Pages. Pengaturan **Pages → Build and deployment → Source** menggunakan **GitHub Actions**.
+Navigasi memakai hash (`#/origin`, `#/nova`, dan lainnya), sehingga URL destinasi dapat dibuka langsung di hosting statis. Koleksi aset sumber tidak ikut dipublikasikan seluruhnya; hanya aset pilihan dari build Vite yang diunggah.
+
 ## Eksplorasi
 
 Halaman awal memakai scope untuk memilih planet/satelit. Mouse mengarahkan scope; tombol panah memilih destinasi dan Enter memasukinya. Menu planet juga tersedia untuk keyboard dan HP.
