@@ -11,6 +11,8 @@ const copy={
  id:{aim:'Arahkan scope ke planet atau satelit',locked:'DESTINASI TERKUNCI',enter:'Masuk ke dunia',scope:'Aktifkan scope',walk:'WASD berjalan · Mouse / geser melihat · Shift berlari · Esc melepas mouse',aimHint:'Arahkan scope ke planet · Klik atau Enter untuk masuk · ← → memilih',return:'Kembali ke orbit',control:'Klik untuk melihat sekeliling',visit:'BENDA INTERAKTIF',previous:'Objek sebelumnya',next:'Objek berikutnya',sit:'Duduk di workstation',stand:'Kembali eksplorasi',chapter:'Bagian',loading:'Menyiapkan destinasi…',interact:'Tekan E atau klik untuk berinteraksi',guide:'Arahkan scope ke planet di halaman awal, lalu klik untuk memasuki dunia 3D tersendiri. Di dalamnya, berjalan dengan WASD dan dekati benda bercahaya untuk berinteraksi dengan ceritanya. Di rumah Origin, dekati kursi lalu tekan E untuk duduk dan membaca cerita lengkap melalui workstation.',text:'Portfolio / versi teks',chairHint:'Dekati meja untuk duduk dan membaca cerita lengkap',open:'Buka tautan'},
 };
 const c=()=>content[language],ui=()=>copy[language];
+const mobileOrbit=()=>matchMedia('(max-width:760px), (pointer:coarse)').matches;
+const orbitHint=()=>mobileOrbit()?(language==='id'?'Geser ↔ ↕ untuk membidik · Tap untuk masuk ke planet yang terkunci':'Swipe ↔ ↕ to aim · Tap to enter the locked planet'):ui().aimHint;
 const flight=new FlightDirector();let navigation=0;
 document.querySelector('#app').innerHTML=`
 <canvas tabindex="0" id="universe" aria-label="3D portfolio"></canvas><div class="vignette" aria-hidden="true"></div>
@@ -44,7 +46,7 @@ function updateAim(index){
 let waypoint=-1;
 function updateWorld(){
  const world=worldIndex>=0;document.body.classList.toggle('inside-world',world);document.body.classList.toggle('exploring',world);document.querySelector('#hero').hidden=true;document.querySelector('#world-hud').hidden=!world;document.querySelector('#scope').hidden=world;document.querySelector('.target-readout').hidden=world;document.querySelector('.destination-bar').hidden=world;document.querySelector('#joystick').hidden=!world||!matchMedia('(pointer:coarse)').matches||!!universe?.seated;
- document.querySelector('.flight-hint').textContent=world?ui().walk:ui().aimHint;
+ document.querySelector('.flight-hint').textContent=world?ui().walk:orbitHint();
  if(world){document.querySelector('#world-coordinate').textContent=`0${worldIndex+1} / ${c().destinations[worldIndex]}`;document.querySelector('#world-name').textContent=worldNames[language][worldIndex];document.querySelector('#world-subtitle').textContent=c().subtitles[worldIndex];document.querySelector('#waypoint-count').textContent=`${Math.max(0,waypoint+1)} / ${universe?.world?.interactables.length||exhibitsFor(worldIndex,language).length}`;}
  updateInteraction(focused);
 }
@@ -79,10 +81,10 @@ async function route(){
 }
 function returnToOrbit(){if(!universe||universe.suspended||universe.mode!=='world')return;if(location.hash==='#/')route();else location.hash='/';}
 function go(index){location.hash='/'+routes[index];}
-function aim(index){if(worldIndex>=0)return;universe.selectOrbit(index);const d=universe.orbit.children[index].position.clone().project(universe.camera);const scope=document.querySelector('#scope');scope.style.left=(d.x*.5+.5)*innerWidth+'px';scope.style.top=(-d.y*.5+.5)*innerHeight+'px';}
+function aim(index){if(worldIndex>=0)return;universe.selectOrbit(index);if(mobileOrbit())return;const d=universe.orbit.children[index].position.clone().project(universe.camera);const scope=document.querySelector('#scope');scope.style.left=(d.x*.5+.5)*innerWidth+'px';scope.style.top=(-d.y*.5+.5)*innerHeight+'px';}
 function updateSettings(){document.querySelector('#motion').textContent=`${c().motion} ${universe?.motion===false?'○':'●'}`;document.querySelector('#motion').setAttribute('aria-pressed',String(universe?.motion!==false));document.querySelector('#quality').textContent=`${c().quality}: ${universe?.low?'L':'H'}`;}
 document.querySelector('#launch').onclick=()=>{if(failed)return;document.body.classList.add('targeting');document.querySelector('#hero').hidden=true;aim(0);};document.querySelector('#discover').onclick=()=>go(2);document.querySelector('#enter-target').onclick=()=>{if(selected>=0)go(selected);};
-document.querySelector('#universe').addEventListener('pointermove',e=>{if(worldIndex<0&&!universe?.suspended){const scope=document.querySelector('#scope');scope.style.left=e.clientX+'px';scope.style.top=e.clientY+'px';}});
+document.querySelector('#universe').addEventListener('pointermove',e=>{if(worldIndex<0&&!universe?.suspended&&!mobileOrbit()){const scope=document.querySelector('#scope');scope.style.left=e.clientX+'px';scope.style.top=e.clientY+'px';}});
 function readerScrollScale(){const screen=universe?.world?.reading?.screen;if(!screen)return 1;universe.camera.updateMatrixWorld();screen.updateWorldMatrix(true,false);const half=(screen.geometry.parameters.height||.675)/2,top=screen.localToWorld(universe.camera.position.clone().set(0,half,0)).project(universe.camera),bottom=screen.localToWorld(universe.camera.position.clone().set(0,-half,0)).project(universe.camera);return 1080/Math.max(100,Math.abs(top.y-bottom.y)*innerHeight/2);}
 function readerHit(x,y){if(!universe?.seated||!universe.world?.reading)return false;universe.camera.updateMatrixWorld();const screen=universe.world.reading.screen;screen.updateWorldMatrix(true,false);universe.raycaster.setFromCamera(universe.pointer.clone().set(x/innerWidth*2-1,1-y/innerHeight*2),universe.camera);return universe.raycaster.intersectObject(screen,false).length>0;}
 function hideReaderCue(){document.querySelector('#reader-exit-cue').hidden=true;document.body.classList.remove('reader-outside');}
@@ -94,12 +96,13 @@ document.querySelector('#universe').addEventListener('pointercancel',()=>{canvas
 document.querySelector('#universe').addEventListener('pointerup',e=>{canvasPress=null;readerDragging=false;updateReaderPointer(e);});
 document.querySelector('#universe').addEventListener('pointerleave',hideReaderCue);
 function resumeExploration(){if(!universe?.seated||universe.suspended||universe.mode!=='world')return;universe.stand();updateReaderUI();updateWorld();}
-document.querySelector('#universe').addEventListener('click',e=>{if(universe?.suspended)return;if(worldIndex<0){const index=universe?.aimAt(e.clientX,e.clientY);if(index>=0)go(index);}else if(universe?.seated){if(!canvasDragged&&!readerHit(e.clientX,e.clientY))resumeExploration();}else universe?.pilot();canvasPress=null;});
+document.querySelector('#universe').addEventListener('click',e=>{if(universe?.suspended)return;if(worldIndex<0){if(canvasDragged)return;const index=universe?.aimAt(mobileOrbit()?innerWidth/2:e.clientX,mobileOrbit()?innerHeight/2:e.clientY);if(index>=0)go(index);}else if(universe?.seated){if(!canvasDragged&&!readerHit(e.clientX,e.clientY))resumeExploration();}else universe?.pilot();canvasPress=null;});
 document.querySelector('#beacons').onclick=e=>{const el=e.target.closest('[data-destination]');if(el)go(Number(el.dataset.destination));};
 document.querySelector('#language').onclick=()=>{language=language==='en'?'id':'en';localStorage.setItem('oskhar-language',language);localize();};document.querySelector('#return-orbit').onclick=returnToOrbit;document.querySelector('#resume').onclick=()=>universe?.pilot();document.querySelector('#interact').onclick=interact;
 for(const [id,delta] of [['previous-exhibit',-1],['next-exhibit',1]])document.querySelector('#'+id).onclick=()=>{if(!universe?.world)return;waypoint=(waypoint+delta+universe.world.cards.length)%universe.world.cards.length;universe.release();universe.visitExhibit(waypoint);updateWorld();};
 document.querySelector('#stand').onclick=resumeExploration;
 document.querySelector('#quality').onclick=()=>{universe?.setQuality(!universe.low);updateSettings();};document.querySelector('#motion').onclick=()=>{if(universe)universe.motion=!universe.motion;updateSettings();};document.querySelector('#help').onclick=()=>{universe?.release();document.querySelector('#guide').hidden=!document.querySelector('#guide').hidden;};document.querySelector('#close-guide').onclick=()=>document.querySelector('#guide').hidden=true;
+window.addEventListener('resize',()=>{if(worldIndex<0)document.querySelector('.flight-hint').textContent=orbitHint();});
 window.addEventListener('hashchange',route);window.addEventListener('keydown',e=>{
  if(/INPUT|TEXTAREA/.test(e.target.tagName)||e.repeat||universe?.suspended)return;
  if(worldIndex<0){if(e.code==='ArrowRight'||e.code==='ArrowLeft'){e.preventDefault();aim((selected+(e.code==='ArrowRight'?1:4)+5)%5);document.querySelector('#universe').focus({preventScroll:true});}if(e.code==='Enter'&&selected>=0&&(e.target===document.body||e.target.id==='universe'))go(selected);}

@@ -197,16 +197,43 @@ export class Universe {
   const normal=item.screen.getWorldDirection(new THREE.Vector3());normal.y=0;if(normal.length()<.1)normal.set(0,0,1);normal.normalize();const position=item.anchor.position.clone().addScaledVector(normal,this.world.index===0?1.35:2.5);position.y=this.world.index===0?1.65:1.85;this.flyTo(position,item.anchor.position);
  }
  selectOrbit(index){
-  if(this.mode!=='orbit')return;this.currentTarget=index;this.onNear(index);
+  if(this.mode!=='orbit')return;
+  if(this.mobileOrbit){const direction=this.orbit.children[index].position.clone().sub(this.camera.position).normalize();this.look={yaw:Math.atan2(-direction.x,-direction.z),pitch:Math.asin(direction.y)};this.clampOrbitLook();this.camera.rotation.set(this.look.pitch,this.look.yaw,0,'YXZ');this.pointer.set(0,0);this.pointerChanged=true;}
+  this.currentTarget=index;this.onNear(index);
+ }
+ clampOrbitLook(){
+  // Keep the view within the forward destination cluster, including its outer edges.
+  const angles=destinations.map(d=>{const direction=new THREE.Vector3(...d.position).sub(new THREE.Vector3(0,2,24)).normalize();return {yaw:Math.atan2(-direction.x,-direction.z),pitch:Math.asin(direction.y)};});
+  this.look.yaw=THREE.MathUtils.clamp(this.look.yaw,Math.min(...angles.map(a=>a.yaw))-.04,Math.max(...angles.map(a=>a.yaw))+.04);
+  this.look.pitch=THREE.MathUtils.clamp(this.look.pitch,Math.min(...angles.map(a=>a.pitch))-.04,Math.max(...angles.map(a=>a.pitch))+.04);
+ }
+ panOrbit(dx,dy){
+  if(this.mode!=='orbit'||this.suspended||!this.mobileOrbit)return;
+  const radiansPerPixel=THREE.MathUtils.degToRad(this.camera.fov)/innerHeight;
+  this.look.yaw+=dx*radiansPerPixel;this.look.pitch+=dy*radiansPerPixel;this.clampOrbitLook();this.pointer.set(0,0);this.pointerChanged=true;
  }
  bind(){
-  this.resize=()=>{this.camera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.renderer.setSize(innerWidth,innerHeight);this.cockpit?.resize();};window.addEventListener('resize',this.resize);
+  const orbitMedia=matchMedia('(max-width:760px), (pointer:coarse)');
+  const updateOrbitControls=()=>{this.mobileOrbit=orbitMedia.matches;document.body.classList.toggle('orbit-touch',this.mobileOrbit);if(this.mode==='orbit'){this.pointer.set(0,0);this.pointerChanged=true;if(this.mobileOrbit)this.clampOrbitLook();else this.look={yaw:0,pitch:0};}};
+  updateOrbitControls();orbitMedia.addEventListener('change',updateOrbitControls);
+  this.resize=()=>{this.camera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.renderer.setSize(innerWidth,innerHeight);this.cockpit?.resize();if(this.mode==='orbit'&&this.mobileOrbit){this.clampOrbitLook();this.pointerChanged=true;}};window.addEventListener('resize',this.resize);
   window.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;if(['KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','KeyQ','KeyE'].includes(e.code)){if(this.mode==='world'&&!this.suspended&&!this.seated&&document.querySelector('#guide').hidden){e.preventDefault();this.keys.add(e.code);this.travel=null;}}});
   window.addEventListener('keyup',e=>this.keys.delete(e.code));window.addEventListener('blur',()=>{this.keys.clear();this.stick={x:0,y:0};});
   document.addEventListener('pointerlockchange',()=>{this.active=document.pointerLockElement===this.canvas;this.keys.clear();document.body.classList.toggle('piloting',this.active);});
   document.addEventListener('mousemove',e=>{if(this.active&&!this.seated){this.look.yaw-=e.movementX*.0018;this.look.pitch=THREE.MathUtils.clamp(this.look.pitch-e.movementY*.0018,-1.45,1.45);this.travel=null;}});
-  let previous=null;this.canvas.addEventListener('pointerdown',e=>{if(this.mode==='world'&&!this.active&&!this.seated){previous={x:e.clientX,y:e.clientY};this.canvas.setPointerCapture(e.pointerId);}});
-  this.canvas.addEventListener('pointermove',e=>{if(this.mode==='orbit'){this.pointer.set(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);this.pointerChanged=true;}if(previous&&this.mode==='world'){this.look.yaw-=(e.clientX-previous.x)*.004;this.look.pitch=THREE.MathUtils.clamp(this.look.pitch-(e.clientY-previous.y)*.004,-1.45,1.45);previous={x:e.clientX,y:e.clientY};this.travel=null;}});this.canvas.addEventListener('pointerleave',()=>{if(this.mode==='orbit'){this.currentTarget=-1;this.pointerChanged=false;this.onNear(-1);}});this.canvas.addEventListener('pointerup',()=>previous=null);this.canvas.addEventListener('pointercancel',()=>previous=null);
+  let previous=null;this.canvas.addEventListener('pointerdown',e=>{if(this.suspended||previous)return;if((this.mode==='orbit'&&this.mobileOrbit)||(this.mode==='world'&&!this.active&&!this.seated)){previous={x:e.clientX,y:e.clientY,id:e.pointerId};this.canvas.setPointerCapture(e.pointerId);}});
+  this.canvas.addEventListener('pointermove',e=>{
+   if(this.suspended)return;
+   if(this.mode==='orbit'&&!this.mobileOrbit){this.pointer.set(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);this.pointerChanged=true;}
+   if(previous&&previous.id===e.pointerId){const dx=e.clientX-previous.x,dy=e.clientY-previous.y;
+    if(this.mode==='orbit')this.panOrbit(dx,dy);
+    else if(this.mode==='world'){this.look.yaw-=dx*.004;this.look.pitch=THREE.MathUtils.clamp(this.look.pitch-dy*.004,-1.45,1.45);this.travel=null;}
+    previous={x:e.clientX,y:e.clientY,id:e.pointerId};
+   }
+  });
+  this.canvas.addEventListener('pointerleave',()=>{if(this.mode==='orbit'&&!this.mobileOrbit){this.currentTarget=-1;this.pointerChanged=false;this.onNear(-1);}});
+  const endDrag=e=>{if(previous?.id===e.pointerId)previous=null;};this.canvas.addEventListener('pointerup',endDrag);this.canvas.addEventListener('pointercancel',endDrag);this.canvas.addEventListener('lostpointercapture',endDrag);window.addEventListener('blur',()=>previous=null);
+  this.canvas.addEventListener('wheel',e=>{if(this.mode!=='orbit'||!this.mobileOrbit||this.suspended)return;e.preventDefault();const scale=e.deltaMode===1?16:e.deltaMode===2?innerHeight:1;this.panOrbit(-e.deltaX*scale,-e.deltaY*scale);},{passive:false});
  }
  pilot(){if(this.mode!=='world'||this.seated||this.suspended)return;this.travel=null;if(matchMedia('(pointer:fine)').matches){const promise=this.canvas.requestPointerLock?.();promise?.catch?.(()=>{});}}
  release(){if(document.pointerLockElement)document.exitPointerLock?.();this.active=false;this.keys.clear();document.body.classList.remove('piloting');}
@@ -230,7 +257,8 @@ export class Universe {
    const station=this.orbit.children[4];station.rotation.y+=dt*.1;station.rotation.z=Math.sin(this.homeTime*.28)*.045;
   }
   this.camera.updateMatrixWorld();this.scene.updateMatrixWorld(true);
-  if(this.mode==='orbit'&&this.pointerChanged){
+  if(this.mode==='orbit'&&!this.suspended&&(this.pointerChanged||this.mobileOrbit)){
+   if(this.mobileOrbit)this.pointer.set(0,0);
    this.raycaster.setFromCamera(this.pointer,this.camera);const hits=this.raycaster.intersectObjects(this.orbit.children,true);let selected=-1;
    for(const hit of hits){let o=hit.object;while(o&&o.userData.destination===undefined)o=o.parent;if(o){selected=o.userData.destination;break;}}
    if(selected!==this.currentTarget){this.currentTarget=selected;this.onNear(selected);}this.pointerChanged=false;

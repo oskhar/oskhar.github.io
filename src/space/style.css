@@ -38,3 +38,12 @@ body:not(.inside-world) .hero{display:none!important}body:not(.inside-world) .he
 #reader-exit-cue>span:first-child{color:#e2c58c;font-size:20px}
 .seated #universe{cursor:grab}.seated.reader-outside #universe{cursor:pointer}
 #reader-scroll-hint.not-scrollable>span:first-child{display:none}
+
+/* Mobile orbit: pan the sky beneath a fixed center reticle. */
+.orbit-touch:not(.inside-world) #scope{left:50%!important;top:50%!important;width:68px;height:68px}
+.orbit-touch:not(.inside-world) #scope .axis-x{width:90px;top:34px;left:-11px}
+.orbit-touch:not(.inside-world) #scope .axis-y{height:90px;left:34px;top:-11px}
+.orbit-touch:not(.inside-world) #scope .scope-tick{left:29px}
+.orbit-touch:not(.inside-world) #beacons{pointer-events:none}
+.orbit-touch:not(.inside-world) .target-readout{top:95px;bottom:auto;left:7%;width:min(230px,75vw)}
+.orbit-touch:not(.inside-world) #enter-target{min-height:44px}
