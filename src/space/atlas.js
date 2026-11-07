@@ -1,3 +1,4 @@
+import {buildAtlasFacility} from './atlas-facility.js';
 import {statusColors,serverStatus,rigStatus} from './atlas-status.js';
 import * as THREE from 'three';
 import { cuboid,ring,glow } from './design.js';
@@ -22,24 +23,13 @@ export function buildAtlas(world){
  const tube=(parent,radius,height,position,material)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,height,24,1,true),material);m.position.fromArray(position);parent.add(m);return m;};
  const line=(parent,points,color=0x4c7987)=>{const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points.map(p=>new THREE.Vector3(...p))),new THREE.LineBasicMaterial({color,transparent:true,opacity:.7}));parent.add(l);return l;};
  const sphere=(parent,r,pos,material)=>{const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),material);m.position.fromArray(pos);parent.add(m);return m;};
- // Architectural scale: sealed specimen bays, clerestory windows, ceiling luminaires and a service spine.
- box(world.group,[22,.06,22],[0,.23,0],new THREE.MeshStandardMaterial({color:0x071b28,roughness:.52,metalness:.48}));
- for(const x of [-10.4,10.4]){
-  box(world.group,[.25,1.15,20],[x,.85,0],ceramic);
-  for(const z of [-7,-2,3,8]){box(world.group,[.25,5.2,.16],[x,2.8,z],edge);box(world.group,[.035,2.7,4.7],[x,3.4,z-2.4],glass);box(world.group,[.07,.06,4.8],[x*.99,4.85,z-2.4],white);}
- }
- for(const z of [-7,-1,5]){for(const x of [-8,8])box(world.group,[.15,5.2,.2],[x,2.8,z],edge);box(world.group,[16.2,.16,.28],[0,5.4,z],edge);for(const x of [-4,4]){box(world.group,[4,.1,.6],[x,5.25,z],ceramic);box(world.group,[3.6,.025,.4],[x,5.18,z],white);}}
- box(world.group,[20,1.3,.25],[0,.9,-10],ceramic);box(world.group,[19,2.7,.04],[0,3.5,-10],glass);
- const title=new THREE.Mesh(new THREE.PlaneGeometry(5.5,1.15),new THREE.MeshBasicMaterial({map:plaque('BACKEND OBSERVATORY','ATLAS / EXPERIMENTAL SYSTEMS'),toneMapped:false}));title.position.set(0,4,-9.8);world.group.add(title);
- for(const x of [-2.1,2.1]){box(world.group,[.025,.015,18],[x,.27,0],new THREE.MeshBasicMaterial({color:0x497f83}));for(let z=-8;z<8;z+=1.2)box(world.group,[.2,.018,.035],[x,.28,z],white);}
- // Low central kinetic sculpture leaves sightlines open and provides an orientation landmark.
- const core=new THREE.Group();core.position.set(0,.28,1);world.group.add(core);tube(core,1,.18,[0,.1,0],edge);const rings=[];for(let i=0;i<3;i++)rings.push(ring(core,.6+i*.18,.4+i*.1,0x8ce8d2,.018,[.3+i*.7,.5,0]));sphere(core,.23,[0,.65,0],white);glow(core,0x86e9db,3,[0,.65,0],.12);
- world.colliders.push(new THREE.Box3(new THREE.Vector3(-1,.2,0),new THREE.Vector3(1,1.5,2)));
+ const facility=buildAtlasFacility(world);
+ world.colliders.push(new THREE.Box3(new THREE.Vector3(-1.05,.2,-.05),new THREE.Vector3(1.05,4,2.05)));
  const positions=[[-6,5],[6,5],[-6,0],[-6,-5],[6,0],[6,-5],[0,-7]];
  const rigs=[];
  positions.forEach(([x,z],n)=>{
   const root=new THREE.Group();root.position.set(x,.28,z);root.name='atlas-rig-'+labDefinitions[n].key;root.userData.labRig=n;world.group.add(root);
-  const color=accents[n],lit=new THREE.MeshBasicMaterial({color,toneMapped:false}),muted=lit.clone();muted.color.multiplyScalar(.3);
+  const color=accents[n],lit=new THREE.MeshBasicMaterial({color,toneMapped:false});
   // Individual apparatus silhouettes, rather than seven copies of a console.
   if(n!==2&&n!==6){box(root,[3.7,.12,2.6],[0,.08,0],edge);for(const side of [-1,1])box(root,[.16,.8,2],[side*1.45,.5,0],ceramic);box(root,[3.5,.14,2.4],[0,.95,0],ceramic);box(root,[3.2,.035,2.1],[0,1.035,0],navy);}
   const bits=[],paths=[],parts={};
@@ -76,6 +66,7 @@ export function buildAtlas(world){
    for(let i=0;i<12;i++)bits.push(box(root,[.65,.08,.45],[i<6?-1.3:1.3,.5+(i%6)*.3,0],lit.clone()));line(root,[[-1.3,1.65,0],[1.3,1.65,0]],color);
    box(root,[3.4,.14,1.7],[0,.13,0],edge);
   }
+  facility.mountRig(root,n);
   const label=new THREE.Mesh(new THREE.PlaneGeometry(2.8,.58),new THREE.MeshBasicMaterial({map:plaque(labDefinitions[n].name[1],String(n+1).padStart(2,'0')+' / '+labDefinitions[n].tag),toneMapped:false}));label.position.set(0,.7,1.32);root.add(label);
   glow(root,color,3,[0,1.1,0],.09);
   const packets=new THREE.InstancedMesh(new THREE.SphereGeometry(.045,6,5),new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false}),48);packets.instanceMatrix.setUsage(THREE.DynamicDrawUsage);packets.frustumCulled=false;for(let i=0;i<48;i++)packets.setColorAt(i,new THREE.Color(0xffffff));root.add(packets);
@@ -99,8 +90,7 @@ export function buildAtlas(world){
   const simDelta=active&&!document.hidden&&!world.lab.paused&&!document.body.classList.contains('mobile-menu-open')?clockDelta:0;
   if(simDelta>0)world.lab.states.forEach(s=>stepLab(s,simDelta));
   // Reduced motion freezes visual travel, while the teaching models continue to report outcomes.
-  visualTime+=simDelta;const t=u.motion?visualTime:1;
-  rings.forEach((r,i)=>{r.rotation.y=t*(.1+i*.035);});
+  visualTime+=simDelta;const t=u.motion?visualTime:1;facility.update(t);
   rigs.forEach((rig,n)=>{
    const s=world.lab.states[n],p=s.params,{bits,parts}=rig;
    if(world.reading===rig.item)world.lab.selected=n;
