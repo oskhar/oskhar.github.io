@@ -42,7 +42,7 @@ Di dalam destinasi, WASD digunakan untuk berjalan, mouse/drag untuk melihat, dan
 - `#/origin`: apartemen elegan 10 × 11 meter dengan kayu hangat, furnitur senada, dapur modular menyatu, meja makan, ruang tamu, kamar, kamar mandi dan workstation tiga monitor, keyboard, mouse, laptop serta PC. Biografi dibuka melalui workstation; buku, globe, bingkai, TV dan lampu memiliki interaksi lain.
 - `#/chronos`: arsip enam bab overseas banking dengan koridor monumental, artefak berbeda, pilihan konteks konsevenual bilingual, progres pemulihan fragmen, dan akses langsung ke cerita pengalaman. Seluruh aturan contoh bersifat ilustratif.
 - `#/nova`: enam kendaraan dengan siluet berbeda—interceptor, explorer, shuttle kru, lander, rover dan cargo. Konsol ditempatkan di luar radius putar kendaraan. Keenam cerita proyek berasal dari CV, termasuk monitoring infrastruktur dan penelitian arsitektur.
-- `#/atlas`: tujuh zona eksperimen berbeda untuk domain, API, event, data, investigasi, delivery, dan riset arsitektur. Pilihan skenario menampilkan diagram, hasil konseptual bilingual, serta perubahan status perangkat.
+- `#/atlas`: laboratorium backend dengan tujuh perangkat simulasi: perambatan perubahan domain, traffic request, reservoir event, query dan indeks, circuit breaker, rollout canary, serta proyeksi read model. Slider mengubah parameter model; animasi 3D, diagram hidup, dan metrik memperlihatkan dampaknya.
 - `#/station`: terminal email, GitHub, LinkedIn dan CV.
 
 ## Sumber utama
@@ -89,4 +89,19 @@ Semua bagian penjelasan dibaca dalam satu dokumen vertikal pada layar objek 3D. 
 
 Pada perangkat sentuh, HUD diringkas menjadi menu navigasi/pengaturan, joystick kiri, dan tombol aksi kontekstual kanan. Geser scene untuk melihat; sensitivitas kamera dapat diatur lewat Menu. Panel aktivitas Chronos dibuka melalui tombol ◈. Cerita memakai panel teks yang dapat digulir langsung. Menu juga menyediakan fullscreen jika browser mendukungnya; portrait, landscape, dan safe area layar ditangani tanpa mengubah isi destinasi.
 
-Chronos dan Atlas menyediakan diagram langkah, perbandingan dua skenario, reset per bab, serta ringkasan ilustrasi pada versi teks. Progres eksplorasi tidak mengunci cerita. Panel aktivitas mobile tetap dibuka melalui ◈; menu mobile tetap hanya berisi kembali ke orbit, sensitivitas kamera, dan fullscreen.
+Chronos menyediakan diagram langkah dan perbandingan dua konteks. Atlas menyediakan parameter, injeksi beban/gangguan, pause, langkah satu detik simulasi, reset per wahana, serta catatan engineer. Keduanya menyertakan ringkasan ilustrasi pada versi teks. Panel aktivitas mobile tetap dibuka melalui ◈; menu mobile tetap hanya berisi kembali ke orbit, sensitivitas kamera, dan fullscreen.
+
+
+### Atlas Backend Observatory
+
+Pilih perangkat 01–07, geser parameter, lalu gunakan aksi eksperimen. Wahana API/event/reliability berjalan terus saat berada di laboratorium; query, canary, perubahan aturan, dan penulisan event dipicu lewat kontrol. Jeda membekukan semua model. Tombol `+1 detik simulasi` memajukan perangkat terpilih saat mengamati perubahan secara bertahap. Reduced motion membekukan gerakan visual; metrik model tetap berjalan.
+
+- Domain: coupling menentukan luas dampak perubahan; isolasi membatasi dampak ke satu domain.
+- API: arrival rate, durasi layanan, dan jumlah worker menentukan antrean. Buffer dibatasi 200; kelebihannya dihitung sebagai penolakan.
+- Event: producer menambah antrean, kapasitas consumer menguranginya. Consumer dapat dijeda; overflow dihitung pada batas 200.
+- Query: scan membutuhkan N pemeriksaan; indeks memakai pendekatan sederhana `ceil(log2(N)) + 1`. Ini model pengajaran, bukan query planner database sebenarnya.
+- Reliability: tiga kegagalan beruntun membuka circuit selama tiga detik simulasi; half-open menguji pemulihan.
+- Canary: traffic dan peluang cacat menentukan error sampel acak deterministik. Rollback menghentikan traffic versi baru.
+- Read model: event ditulis ke source, lalu diterapkan sesudah jeda; proyeksi bisa dijeda atau dibangun ulang melalui replay.
+
+Seluruh angka merupakan hasil model edukasi lokal, bukan benchmark atau metrik pekerjaan nyata. Pengujian model: `npm run test:atlas`.

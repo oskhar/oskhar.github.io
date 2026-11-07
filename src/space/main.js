@@ -57,10 +57,11 @@ function updateWorld(){
 function updateInteraction(exhibit){
  focused=exhibit;const item=exhibit?.item;const visible=worldIndex>=0&&!universe?.seated&&!universe?.suspended&&!!item;document.querySelector('#world-interaction').hidden=!visible;
  document.querySelector('#interaction-label').textContent=item?item.label[language]:'';
- document.querySelector('#interact').textContent=item?.kind==='boarding'?(language==='id'?'E · Naik pesawat':'E · Board spacecraft'):item?.kind==='seat'?ui().sit:item?.kind==='link'?ui().open+' ↗':item?.kind==='light'?(language==='id'?'Ubah pencahayaan':'Switch the lighting'):(language==='id'?'E · Jelajahi cerita':'E · Explore the story');
+ document.querySelector('#interact').textContent=item?.kind==='experiment'?(language==='id'?'Bereksperimen':'Experiment'):item?.kind==='boarding'?(language==='id'?'E · Naik pesawat':'E · Board spacecraft'):item?.kind==='seat'?ui().sit:item?.kind==='link'?ui().open+' ↗':item?.kind==='light'?(language==='id'?'Ubah pencahayaan':'Switch the lighting'):(language==='id'?'E · Jelajahi cerita':'E · Explore the story');
 }
 function interact(){
  const item=focused?.item;if(!item||universe?.seated||universe?.suspended)return;
+ if(item.kind==='experiment'){universe.world.lab.selected=item.labIndex;universe.release();window.dispatchEvent(new Event('atlas-experiment'));return;}
  if(item.kind==='boarding'){if(universe.camera.position.distanceTo(item.anchor.position)<=item.activationDistance)returnToOrbit();return;}
  if(item.kind==='link'){item.activated=true;universe.release();window.open(item.url,'_blank','noopener,noreferrer');}
  else if(item.kind==='light'){universe.world.toggleLights();item.activated=!!universe.world.dimmed;}
