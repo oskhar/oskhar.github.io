@@ -61,7 +61,7 @@ function updateInteraction(exhibit){
 }
 function interact(){
  const item=focused?.item;if(!item||universe?.seated||universe?.suspended)return;
- if(item.kind==='experiment'){universe.world.lab.selected=item.labIndex;universe.release();window.dispatchEvent(new Event('atlas-experiment'));return;}
+ if(item.kind==='experiment'){universe.world.lab.selected=item.labIndex;universe.world.lab.controlsOpen=true;universe.release();window.dispatchEvent(new Event('atlas-experiment'));return;}
  if(item.kind==='boarding'){if(universe.camera.position.distanceTo(item.anchor.position)<=item.activationDistance)returnToOrbit();return;}
  if(item.kind==='link'){item.activated=true;universe.release();window.open(item.url,'_blank','noopener,noreferrer');}
  else if(item.kind==='light'){universe.world.toggleLights();item.activated=!!universe.world.dimmed;}

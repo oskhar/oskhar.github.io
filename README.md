@@ -105,3 +105,8 @@ Pilih perangkat 01–07, geser parameter, lalu gunakan aksi eksperimen. Wahana A
 - Read model: event ditulis ke source, lalu diterapkan sesudah jeda; proyeksi bisa dijeda atau dibangun ulang melalui replay.
 
 Seluruh angka merupakan hasil model edukasi lokal, bukan benchmark atau metrik pekerjaan nyata. Pengujian model: `npm run test:atlas`.
+
+
+Atlas memakai status warna bersama: putih = idle, hijau = sehat, kuning = beban tinggi/tertunda, merah = down/gagal. Kontrol parameter dibuka lewat aksi Bereksperimen atau tombol Parameter, dan tidak menutupi laboratorium secara default. Preview 2D hanya muncul saat kursor menunjuk perangkat; pada mobile kontrol dibuka melalui aksi perangkat atau ◈. Label mengambang Atlas dihapus; identitas perangkat tetap tercetak pada meja.
+
+Wahana load balancer menampilkan delapan server. Jumlah server aktif, server down, bias ke server pertama, durasi layanan, dan arrival rate dapat diubah. Distribusi merata dapat diaktifkan untuk membandingkan antrean pada routing yang berat sebelah. Request menunggu berwarna kuning, server down merah tidak menerima pekerjaan, dan kapasitas yang tidak dipakai berwarna putih.

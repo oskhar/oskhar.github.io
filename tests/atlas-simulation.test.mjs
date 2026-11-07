@@ -1,12 +1,18 @@
+import {serverStatus,rigStatus} from '../src/space/atlas-status.js';
 import assert from 'node:assert/strict';
 import {createLabState,stepLab,labAction,labToggle,replayProjection,labMetrics} from '../src/space/atlas-simulation.js';
 function advance(s,seconds){for(let i=0;i<seconds*20;i++)stepLab(s,.05);}
 const domain=createLabState(0);labAction(domain);assert.ok(labMetrics(domain)[0][1]>1);labToggle(domain);assert.equal(labMetrics(domain)[0][1],1);
 const api=createLabState(1);api.params.arrival=30;api.params.workers=1;api.params.latency=2000;advance(api,10);assert.ok(api.queue>100);assert.ok(api.active.length<=1);assert.ok(api.rejected>0);api.params.arrival=1;api.params.workers=8;api.params.latency=100;advance(api,10);assert.ok(api.queue<2);
-const events=createLabState(2);labToggle(events);advance(events,5);assert.ok(events.queue>40);labToggle(events);events.params.producer=1;events.params.consumers=6;events.params.rate=8;advance(events,5);assert.ok(events.queue<1);assert.ok(events.processed>40);
+const events=createLabState(2);events.params.producer=9;labToggle(events);advance(events,5);assert.ok(events.queue>40);labToggle(events);events.params.producer=1;events.params.consumers=6;events.params.rate=8;advance(events,5);assert.ok(events.queue<1);assert.ok(events.processed>40);
 const scan=createLabState(3);scan.params.rows=1000;labAction(scan);advance(scan,5);assert.equal(scan.checks,1000);assert.equal(scan.progress,1);labToggle(scan);labAction(scan);advance(scan,5);assert.equal(scan.checks,Math.ceil(Math.log2(1000))+1);assert.ok(scan.checks<1000);
 const breaker=createLabState(4);breaker.params.failure=100;labToggle(breaker);advance(breaker,2);assert.equal(breaker.breaker,'open');assert.ok(breaker.blocked>0);labAction(breaker);advance(breaker,2);assert.equal(breaker.breaker,'closed');assert.ok(breaker.processed>0);
 const delivery=createLabState(5);delivery.params.canary=100;delivery.params.defect=100;labAction(delivery);advance(delivery,2);assert.equal(delivery.errors,delivery.attempts);assert.ok(delivery.attempts>0);labToggle(delivery);const count=delivery.attempts;advance(delivery,2);assert.equal(delivery.attempts,count);assert.equal(delivery.deployed,false);
 const projection=createLabState(6);labToggle(projection);labAction(projection);labAction(projection);advance(projection,5);assert.equal(projection.readVersion,0);labToggle(projection);advance(projection,1);assert.equal(projection.readVersion,2);replayProjection(projection);assert.equal(projection.readVersion,0);advance(projection,5);assert.equal(projection.readVersion,2);
 const a=createLabState(2),b=createLabState(2);for(let i=0;i<100;i++)stepLab(a,.1);for(let i=0;i<200;i++)stepLab(b,.05);assert.ok(Math.abs(a.queue-b.queue)<.001);
 console.log('Atlas: domain isolation, API capacity, backpressure, index costs, breaker recovery, rollback, replay and timestep invariance passed.');
+
+const traffic=createLabState(1);traffic.params.arrival=0;assert.equal(serverStatus(traffic,0),'idle');traffic.params.arrival=1;traffic.params.latency=2000;advance(traffic,1.1);assert.equal(serverStatus(traffic,traffic.active[0].worker),'healthy');traffic.params.arrival=30;assert.equal(serverStatus(traffic,traffic.active[0].worker),'warning');traffic.params.down=3;assert.equal(serverStatus(traffic,0),'down');assert.equal(rigStatus(traffic),'down');advance(traffic,1);assert.equal(traffic.active.length,0);assert.equal(serverStatus(traffic,7),'idle');
+console.log('Atlas: idle/healthy/high-load/down status colors and down-server exclusion passed.');
+const skewed=createLabState(1);skewed.params.arrival=4;skewed.params.latency=500;skewed.params.skew=100;advance(skewed,10);assert.ok(skewed.queue>5);assert.ok(skewed.active.every(j=>j.worker===0));assert.equal(serverStatus(skewed,1),'idle');labToggle(skewed);advance(skewed,20);assert.ok(skewed.queue<2);
+console.log('Atlas: biased routing overloads one server; balanced routing drains the queue.');
