@@ -94,10 +94,10 @@ Chronos menyediakan diagram langkah dan perbandingan dua konteks. Atlas menyedia
 
 ### Atlas Backend Observatory
 
-Pilih perangkat 01–07, geser parameter, lalu gunakan aksi eksperimen. Wahana API/event/reliability berjalan terus saat berada di laboratorium; query, canary, perubahan aturan, dan penulisan event dipicu lewat kontrol. Jeda membekukan semua model. Tombol `+1 detik simulasi` memajukan perangkat terpilih saat mengamati perubahan secara bertahap. Reduced motion membekukan gerakan visual; metrik model tetap berjalan.
+Pilih perangkat 01–07, geser parameter, lalu gunakan aksi eksperimen. Wahana API/event/reliability berjalan terus saat berada di laboratorium; query, canary, perubahan aturan, dan penulisan event dipicu lewat kontrol. Jeda membekukan semua model. Tombol `Maju 1 detik (wahana ini)` memajukan perangkat terpilih saat mengamati perubahan secara bertahap. Reduced motion membekukan gerakan visual; metrik model tetap berjalan.
 
 - Domain: coupling menentukan luas dampak perubahan; isolasi membatasi dampak ke satu domain.
-- API: arrival rate, durasi layanan, dan jumlah worker menentukan antrean. Buffer dibatasi 200; kelebihannya dihitung sebagai penolakan.
+- Load balancer: pengunjung masuk, jumlah server, dan algoritma menentukan antrean lokal. Setiap server menampung hingga 40 request; antrean >8 selama 3 detik memicu restart perlindungan 5 detik pada model edukasi ini. Ini bukan klaim bahwa overload nyata selalu menyebabkan crash.
 - Event: producer menambah antrean, kapasitas consumer menguranginya. Consumer dapat dijeda; overflow dihitung pada batas 200.
 - Query: scan membutuhkan N pemeriksaan; indeks memakai pendekatan sederhana `ceil(log2(N)) + 1`. Ini model pengajaran, bukan query planner database sebenarnya.
 - Reliability: tiga kegagalan beruntun membuka circuit selama tiga detik simulasi; half-open menguji pemulihan.
@@ -109,7 +109,9 @@ Seluruh angka merupakan hasil model edukasi lokal, bukan benchmark atau metrik p
 
 Atlas memakai status warna bersama: putih = idle, hijau = sehat, kuning = beban tinggi/tertunda, merah = down/gagal. Kontrol parameter dibuka lewat aksi Bereksperimen atau tombol Parameter, dan tidak menutupi laboratorium secara default. Preview 2D hanya muncul saat kursor menunjuk perangkat; pada mobile kontrol dibuka melalui aksi perangkat atau ◈. Label mengambang Atlas dihapus; identitas perangkat tetap tercetak pada meja.
 
-Wahana load balancer menampilkan delapan server. Jumlah server aktif, server down, bias ke server pertama, durasi layanan, dan arrival rate dapat diubah. Distribusi merata dapat diaktifkan untuk membandingkan antrean pada routing yang berat sebelah. Request menunggu berwarna kuning, server down merah tidak menerima pekerjaan, dan kapasitas yang tidak dipakai berwarna putih.
+Wahana load balancer menampilkan delapan server. Kontrol dasarnya adalah pengunjung masuk, jumlah server, dan pilihan algoritma: Round robin, Beban paling ringan, atau Satu server saja (contoh buruk). Kecepatan server dan profil server lambat ada di Pengaturan lanjutan. Status down muncul dari overload berkepanjangan, bukan slider manual. Request menunggu berwarna kuning, server down merah tidak menerima pekerjaan, dan kapasitas yang tidak dipakai berwarna putih.
 
 
 Atlas memakai interior fasilitas riset tertutup: hull bertekanan, airlock dengan jalur keluar yang lapang, plafon layanan dan ventilasi, jendela observasi menuju ruang persiapan sampel, lemari reagen, meja mikroskop, konsol analisis, dan layar instrumen di dinding. Data Helix A-07 berputar di dalam vessel containment pusat. Wahana backend dipasang dalam housing instrumen dengan panel observasi, cap tekanan, probe pemindai, dan penanda keselamatan. Geometri lingkungan statis digabung berdasarkan material untuk membatasi draw call; gerak spesimen serta layar instrumen mengikuti pengaturan motion/pause.
+
+Kontrol seluruh wahana menampilkan tujuan eksperimen, bantuan singkat per input, status tombol yang eksplisit (aktif/mati atau jeda/lanjutkan), dan penjelasan sebab-akibat berikut saran perbaikan. Pengaturan teknis lanjutan disembunyikan secara default. Kondisi layanan luar dan kualitas kandidat rilis dipilih sebagai skenario yang mudah dibaca.

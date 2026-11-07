@@ -1,3 +1,4 @@
+import {labGoals,controlHelp,toggleLabel,labFeedback} from './atlas-guidance.js';
 import {statusColors,statusNames,serverStatus} from './atlas-status.js';
 import { labDefinitions,labAction,labToggle,replayProjection,labMetrics,createLabState,stepLab } from './atlas-simulation.js';
 import './atlas.css';
@@ -6,35 +7,51 @@ export function createLabConsole(world,focusRig){
  const panel=document.createElement('section');panel.className='atlas-lab-console';panel.hidden=true;panel.setAttribute('aria-label','Atlas backend playground');document.body.append(panel);
  const toggle=document.createElement('button');toggle.className='lab-controls-toggle';toggle.textContent='⚙ Parameters';document.body.append(toggle);toggle.onclick=()=>{world.lab.controlsOpen=!world.lab.controlsOpen;};
  const preview=document.createElement('aside');preview.className='atlas-hover-preview';preview.hidden=true;preview.setAttribute('aria-label','Diagram preview');const previewTitle=document.createElement('span');preview.append(previewTitle);const previewCanvas=document.createElement('canvas');previewCanvas.width=640;previewCanvas.height=260;preview.append(previewCanvas);document.body.append(preview);
- let signature='',metricTime=0,lastAnnouncement='';let metricNodes=[],status=null,serverNodes=[];
+ let signature='',metricTime=0;let metricNodes=[],status=null,serverNodes=[];
  const state=()=>world.lab.states[world.lab.selected];
  function render(){
   const id=world.language==='id',n=world.lab.selected,def=labDefinitions[n];const next=[id,n].join();if(signature===next)return;signature=next;
   panel.replaceChildren();
   const el=(tag,text,parent=panel)=>{const node=document.createElement(tag);if(text)node.textContent=text;parent.append(node);return node;};
-  const header=el('div','');header.className='lab-console-header';el('span','ATLAS / LIVE LAB',header);const pause=el('button',world.lab.paused?(id?'Lanjut':'Resume'):(id?'Jeda':'Pause'),header);pause.dataset.action='pause';pause.onclick=()=>{world.lab.paused=!world.lab.paused;pause.textContent=world.lab.paused?(id?'Lanjut':'Resume'):(id?'Jeda':'Pause');pause.setAttribute('aria-pressed',String(world.lab.paused));};pause.setAttribute('aria-pressed',String(world.lab.paused));
+  const header=el('div','');header.className='lab-console-header';el('span','ATLAS / LIVE LAB',header);const pause=el('button',world.lab.paused?(id?'Lanjutkan lab':'Resume lab'):(id?'Jeda lab':'Pause lab'),header);pause.dataset.action='pause';pause.onclick=()=>{world.lab.paused=!world.lab.paused;pause.textContent=world.lab.paused?(id?'Lanjutkan lab':'Resume lab'):(id?'Jeda lab':'Pause lab');pause.setAttribute('aria-pressed',String(world.lab.paused));};pause.setAttribute('aria-pressed',String(world.lab.paused));
   const close=el('button','✕',header);close.ariaLabel=id?'Tutup kontrol':'Close controls';close.onclick=()=>{world.lab.controlsOpen=false;window.dispatchEvent(new Event('close-atlas-controls'));};
   const legend=el('div','');legend.className='lab-legend';Object.entries(statusColors).forEach(([key,color])=>{const label=el('span',statusNames[id?'id':'en'][key],legend);label.style.setProperty('--status','#'+color.toString(16).padStart(6,'0'));});
-  serverNodes=[];if(n===1){const list=el('div','');list.className='lab-server-list';for(let i=0;i<8;i++)serverNodes.push(el('span','S'+(i+1),list));}
+  serverNodes=[];
   const nav=el('div','');nav.className='lab-stations';nav.setAttribute('aria-label',id?'Wahana eksperimen':'Experiment rigs');
   labDefinitions.forEach((d,i)=>{const b=el('button',String(i+1).padStart(2,'0'),nav);b.ariaLabel=d.name[id?0:1];b.title=d.name[id?0:1];b.setAttribute('aria-pressed',String(i===n));b.dataset.rig=i;b.onclick=()=>{world.lab.selected=i;signature='';render();panel.querySelector(`[data-rig="${i}"]`).focus({preventScroll:true});focusRig(i);};});
-  el('small',def.tag);el('h2',def.name[id?0:1]);el('p',def.hint[id?0:1]).className='lab-hint';
-  const form=el('div','');form.className='lab-parameters';
+  el('small',def.tag);el('h2',def.name[id?0:1]);el('p',(id?'Tujuan: ':'Goal: ')+labGoals[n][id?0:1]).className='lab-hint';
+  status=el('p',labFeedback(state(),id));status.className='lab-status';status.setAttribute('role','status');
+  const form=el('div','');form.className='lab-parameters';const advanced=el('details','');advanced.className='lab-advanced';el('summary',id?'Pengaturan lanjutan':'Advanced settings',advanced);const advancedForm=el('div','',advanced);advancedForm.className='lab-parameters';
+  const select=(parent,labelText,key,options,current,change)=>{const label=el('label','',parent);el('span',labelText,label);const input=el('select','',label);input.dataset.param=key;for(const [value,text] of options){const option=el('option',text,input);option.value=value;}input.value=current;input.onchange=()=>change(input.value);return input;};
+  if(n===1){
+   const explain=()=>({
+    'round-robin':['Mengirim request secara bergiliran. Tidak memperhitungkan perbedaan kecepatan server.','Sends requests in turn without accounting for different server speeds.'],
+    'least-load':['Memilih server dengan estimasi sisa pekerjaan paling sedikit.','Chooses the server with the least estimated remaining work.'],
+    single:['Menumpuk request di satu server sementara server lain menganggur. Ini contoh desain buruk.','Piles requests onto one server while others sit idle. This is a bad design example.'],
+   }[state().algorithm][id?0:1]);
+   select(form,id?'Cara membagi pengunjung':'How to distribute visitors','algorithm',[['round-robin','Round robin · '+(id?'bergiliran':'take turns')],['least-load',id?'Beban paling ringan':'Least remaining workload'],['single',id?'Satu server saja (contoh buruk)':'One server only (bad example)']],state().algorithm,value=>{state().algorithm=value;algorithmHelp.textContent=explain();});
+   const algorithmHelp=el('small',explain(),form);algorithmHelp.className='lab-help';
+   select(advancedForm,id?'Kecepatan server':'Server speeds','profile',[['uniform',id?'Semua sama cepat':'All equally fast'],['mixed',id?'Server 1 lebih lambat':'Server 1 is slower']],state().profile,value=>state().profile=value);
+   el('p',id?'Aturan model: antrean >8 selama 3 detik memicu restart perlindungan selama 5 detik. Overload di sistem nyata tidak selalu menyebabkan server down.':'Model rule: a queue above 8 for 3 seconds triggers a 5-second protective restart. Real overload does not always bring a server down.',advanced).className='lab-help';
+  }
+  if(n===4)select(form,id?'Kondisi layanan luar':'External service condition','service',[['0',id?'Normal':'Healthy'],['50',id?'Gangguan sesekali':'Intermittent faults'],['100',id?'Tidak tersedia':'Unavailable']],String(state().params.failure),value=>{state().params.failure=Number(value);});
+  if(n===5)select(advancedForm,id?'Kandidat rilis':'Release candidate','candidate',[['0',id?'Tanpa cacat dalam model':'No defects in model'],['30',id?'Memiliki bug':'Contains bugs'],['100',id?'Selalu gagal':'Always fails']],String(state().params.defect),value=>state().params.defect=Number(value));
   def.params.forEach(([key,local,english,min,max,initial,unit])=>{
-   const label=el('label','',form);const row=el('span','',label);el('span',id?local:english,row);const value=el('output',state().params[key]+unit,row);value.htmlFor='lab-param-'+key;
-   const input=el('input','',label);input.id='lab-param-'+key;input.type='range';input.min=min;input.max=key==='down'?state().params.workers:max;input.step=key==='latency'||key==='delay'?50:key==='rows'?100:1;input.value=state().params[key];input.dataset.param=key;
-   input.oninput=()=>{state().params[key]=Number(input.value);value.textContent=input.value+unit;if(key==='workers'){const down=panel.querySelector('[data-param="down"]');down.max=input.value;state().params.down=Math.min(state().params.down,Number(input.value));down.value=state().params.down;down.previousElementSibling.querySelector('output').textContent=state().params.down;}};
+   if(key==='failure'||key==='defect')return;const extra=['latency','rate','delay','coupling'].includes(key);const label=el('label','',extra?advancedForm:form);const row=el('span','',label);el('span',id?local:english,row);const value=el('output',state().params[key]+unit,row);value.htmlFor='lab-param-'+key;
+   const input=el('input','',label);input.id='lab-param-'+key;input.type='range';input.min=min;input.max=max;input.step=key==='latency'||key==='delay'?50:key==='rows'?100:1;input.value=state().params[key];input.dataset.param=key;
+   input.oninput=()=>{state().params[key]=Number(input.value);value.textContent=input.value+unit;if(n===3){state().running=false;state().progress=0;state().checks=0;}};if(controlHelp[key])el('small',controlHelp[key][id?0:1],label).className='lab-help';
   });
+  advanced.hidden=advancedForm.childElementCount===0&&advanced.querySelectorAll('p').length===0;
   const actions=el('div','');actions.className='lab-actions';
-  const run=el('button',def.action[id?0:1],actions);run.dataset.action='run';run.onclick=()=>{labAction(state());if(n===4){const input=panel.querySelector('[data-param="failure"]');input.value=0;input.previousElementSibling.querySelector('output').textContent='0%';}if(n===5)updateToggle();announce(id?'Eksperimen dijalankan.':'Experiment triggered.');};
+  const run=el('button',def.action[id?0:1],actions);run.dataset.action='run';run.onclick=()=>{labAction(state());if(n===4)panel.querySelector('[data-param="service"]').value='0';if(n===5)updateToggle();announce(id?'Eksperimen dijalankan.':'Experiment triggered.');};
   let toggle=null;
-  function updateToggle(){if(toggle)toggle.setAttribute('aria-pressed',String(state().toggle));}
+  function updateToggle(){if(toggle){toggle.textContent=toggleLabel(state(),id);if(n!==5)toggle.setAttribute('aria-pressed',String(state().toggle));else toggle.disabled=!state().deployed;}}
   if(def.toggle){toggle=el('button',def.toggle[id?0:1],actions);toggle.dataset.action='toggle';updateToggle();toggle.onclick=()=>{labToggle(state());if(n===5){state().toggle=true;state().deployed=false;}updateToggle();announce(id?'Konfigurasi diperbarui.':'Configuration updated.');};}
   if(n===6){const replay=el('button',id?'Replay proyeksi':'Replay projection',actions);replay.dataset.action='replay';replay.onclick=()=>{replayProjection(state());announce(id?'Proyeksi dibangun ulang dari event.':'Projection rebuilding from events.');};}
   const grid=el('dl','');grid.className='lab-metrics';metricNodes=labMetrics(state(),id).map(([label,value])=>{const cell=el('div','',grid);el('dt',label,cell);return el('dd',String(value),cell);});
-  status=el('p','');status.className='lab-status';status.setAttribute('role','status');status.textContent=id?'Ubah parameter dan amati perangkat di ruang laboratorium.':'Change parameters and watch the apparatus in the laboratory.';
+  if(n===1){const details=el('details','');details.className='lab-server-diagnostics';el('summary',id?'Lihat status tiap server':'Inspect individual servers',details);const list=el('div','',details);list.className='lab-server-list';for(let i=0;i<8;i++)serverNodes.push(el('span','S'+(i+1),list));}
   const tools=el('div','');tools.className='lab-tools';
-  const step=el('button',id?'+1 detik simulasi':'+1 simulation second',tools);step.dataset.action='step';step.onclick=()=>{for(let i=0;i<20;i++)stepLab(state(),.05);announce(id?'Model maju satu detik.':'Model advanced one second.');};
+  const step=el('button',id?'Maju 1 detik (wahana ini)':'Advance this rig by 1 second',tools);step.dataset.action='step';step.onclick=()=>{for(let i=0;i<20;i++)stepLab(state(),.05);announce(id?'Model maju satu detik.':'Model advanced one second.');};
   const reset=el('button',id?'Reset wahana':'Reset rig',tools);reset.dataset.action='reset';reset.onclick=()=>{world.lab.states[n]=createLabState(n);signature='';render();panel.querySelector('[data-action="reset"]').focus({preventScroll:true});};
   const read=el('button',id?'Catatan engineer ↗':'Engineer notes ↗',tools);read.dataset.action='read';read.onclick=()=>{world.universe.release();world.universe.sit(world.interactables[n]);window.dispatchEvent(new Event('chronos-reading'));};
   el('small',id?'MODEL EDUKASI · Angka simulasi, bukan benchmark produksi.':'TEACHING MODEL · Simulated values, not production benchmarks.').className='lab-disclaimer';
@@ -45,12 +62,10 @@ export function createLabConsole(world,focusRig){
   const hovered=world.lab.hovered;preview.hidden=!visible||world.universe.mobileOrbit||wanted||hovered===null||hovered===undefined;if(!preview.hidden){previewTitle.textContent=labDefinitions[hovered].name[world.language==='id'?0:1];drawLabDiagram(previewCanvas,world.lab.states[hovered],world.universe.motion&&!world.lab.paused);}
   if(!visible||!wanted)return;
   render();metricTime+=dt||.016;if(metricTime<.1)return;metricTime=0;
-  const s=state(),id=world.language==='id';serverNodes.forEach((node,i)=>{const key=serverStatus(s,i);node.textContent='S'+(i+1)+' · '+statusNames[id?'id':'en'][key];node.style.borderColor='#'+statusColors[key].toString(16).padStart(6,'0');});labMetrics(s,id).forEach(([,value],i)=>{if(metricNodes[i])metricNodes[i].textContent=String(value);});
-  const result=s.index===3?(s.running?'query-running':s.progress===1?'query-complete':'idle'):s.index===4?s.breaker:s.index===6?s.events.length?'projecting':'synced':'';
-  if(result&&lastAnnouncement!==s.index+result){lastAnnouncement=s.index+result;const messages={
-   'query-running':id?'Query sedang memeriksa data.':'Query scanning data.', 'query-complete':id?'Query selesai. Bandingkan jumlah pemeriksaan dengan mengubah indeks.':'Query complete. Toggle the index and compare check counts.',
-   open:id?'Circuit terbuka. Percobaan ditahan selama cooldown.':'Circuit open. Attempts held during cooldown.', 'half-open':id?'Circuit menguji pemulihan dependensi.':'Circuit probing dependency recovery.', closed:id?'Circuit tertutup. Request dapat diteruskan.':'Circuit closed. Requests can proceed.',
-   projecting:id?'Read model tertinggal. Event menunggu proyeksi.':'Read model behind. Events awaiting projection.',synced:id?'Read model sudah selaras dengan sumber.':'Read model is synchronized with the source.'};announce(messages[result]||'');}
+  const s=state(),id=world.language==='id';serverNodes.forEach((node,i)=>{const key=serverStatus(s,i);node.textContent='S'+(i+1)+' · '+(key==='down'?(id?'Restart akibat overload':'Restarting after overload'):statusNames[id?'id':'en'][key]);node.style.borderColor='#'+statusColors[key].toString(16).padStart(6,'0');});labMetrics(s,id).forEach(([,value],i)=>{if(metricNodes[i])metricNodes[i].textContent=String(value);});
+  const feedback=labFeedback(s,id);if(status.textContent!==feedback)status.textContent=feedback;
+
+
  }
  window.addEventListener('hashchange',()=>{panel.hidden=true;preview.hidden=true;toggle.hidden=true;});
  return {update,panel};

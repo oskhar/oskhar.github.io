@@ -103,10 +103,11 @@ export function buildAtlas(world){
    if(n===4){parts.gate.rotation.z=s.toggle&&s.breaker==='open'?Math.PI/2:0;parts.gate.material.color.set(s.breaker==='open'?statusColors.down:statusColors.healthy).convertSRGBToLinear();bits[1].material.color.set(healthColor).convertSRGBToLinear();}
    if(n===5){const share=s.deployed?p.canary:0;bits.forEach((b,i)=>{b.material.color.set(i>=4?(s.deployed&&p.canary>0?healthColor:statusColors.idle):statusColors.healthy).convertSRGBToLinear();});parts.balance.rotation.z=(share-50)/100*.35;}
    if(n===6)bits.forEach((b,i)=>{const v=i<6?s.version:s.readVersion;b.visible=i%6<Math.min(6,v);b.material.color.set(i<6||s.version===s.readVersion?statusColors.healthy:statusColors.warning).convertSRGBToLinear();});
+   const waiting=[];if(n===1)s.servers.slice(0,p.workers).forEach((server,index)=>{for(let q=0;q<Math.min(5,server.queue);q++)waiting.push({index,q});});
    for(let i=0;i<48;i++){
     rig.packets.setColorAt(i,tint.set(healthColor).convertSRGBToLinear());let x=0,y=-10,z=0;const f=(t*.35+i/16)%1;
     if(n===0&&s.changed&&i<6&&i<affected){const pos=parts.points[i];x=pos[0]*f;y=2+(pos[1]-2)*f;}
-    if(n===1){if(i<s.active.length){const job=s.active[i],progress=u.motion?1-job.left/job.total:.5,pos=parts.servers[job.worker];x=pos[0]*progress;y=2.95+(pos[1]-2.95)*progress;z=.25*(1-progress);rig.packets.setColorAt(i,tint.set(statusColors[serverStatus(s,job.worker)]).convertSRGBToLinear());}else if(i<s.active.length+Math.min(24,Math.floor(s.queue))){const q=i-s.active.length;x=-1.65-(q%3)*.09;y=1.3+Math.floor(q/3)*.14;z=.15;rig.packets.setColorAt(i,tint.set(statusColors.warning).convertSRGBToLinear());}}
+    if(n===1){if(i<s.active.length){const job=s.active[i],progress=u.motion?1-job.left/job.total:.5,pos=parts.servers[job.worker];x=pos[0]*progress;y=2.95+(pos[1]-2.95)*progress;z=.25*(1-progress);rig.packets.setColorAt(i,tint.set(statusColors[serverStatus(s,job.worker)]).convertSRGBToLinear());}else if(waiting[i-s.active.length]){const slot=waiting[i-s.active.length],pos=parts.servers[slot.index];x=pos[0]+.28+(slot.q%2)*.06;y=pos[1]-.23+slot.q*.1;z=.35;rig.packets.setColorAt(i,tint.set(statusColors.warning).convertSRGBToLinear());}}
 
     if(n===2&&i<Math.min(32,Math.floor(s.queue))){rig.packets.setColorAt(i,tint.set(healthColor).convertSRGBToLinear());const a=i*2.4+t*.2;x=Math.cos(a)*.65;y=.4+(i%8)*.23;z=Math.sin(a)*.65;}
     if(n===2&&i>=32&&i<40){const phase=(t*.5+(i-32)/8)%1;x=-1.6+phase*1.6;y=2.5;z=0;rig.packets.setColorAt(i,tint.set(statusColors.healthy).convertSRGBToLinear());}
