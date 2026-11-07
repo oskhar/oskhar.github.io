@@ -11,7 +11,7 @@ export function serverStatus(s,i){
 export function rigStatus(s){switch(s.index){
  case 0:return !s.changed?'idle':!s.toggle&&s.params.coupling>50?'warning':'healthy';
  case 1:return s.params.down>=s.params.workers?'down':s.queue>5?'warning':s.active.length?'healthy':'idle';
- case 2:return s.queue>=199?'down':s.toggle||s.params.producer>s.params.consumers*s.params.rate?'warning':s.queue>0||s.processed?'healthy':'idle';
+ case 2:return s.queue>=199?'down':s.toggle||s.queue>20||s.params.producer>s.params.consumers*s.params.rate?'warning':s.queue>0||s.processed?'healthy':'idle';
  case 3:return s.running?(s.toggle?'healthy':'warning'):s.progress===1?'healthy':'idle';
  case 4:return s.params.failure===100||s.toggle&&s.breaker==='open'?'down':s.params.failure>0?'warning':s.attempts?'healthy':'idle';
  case 5:return !s.deployed?'idle':s.params.defect>=80&&s.params.canary>0?'down':s.params.defect>0&&s.params.canary>0?'warning':'healthy';

@@ -16,3 +16,5 @@ const traffic=createLabState(1);traffic.params.arrival=0;assert.equal(serverStat
 console.log('Atlas: idle/healthy/high-load/down status colors and down-server exclusion passed.');
 const skewed=createLabState(1);skewed.params.arrival=4;skewed.params.latency=500;skewed.params.skew=100;advance(skewed,10);assert.ok(skewed.queue>5);assert.ok(skewed.active.every(j=>j.worker===0));assert.equal(serverStatus(skewed,1),'idle');labToggle(skewed);advance(skewed,20);assert.ok(skewed.queue<2);
 console.log('Atlas: biased routing overloads one server; balanced routing drains the queue.');
+
+const backlog=createLabState(2);backlog.queue=100;assert.equal(rigStatus(backlog),'warning');backlog.queue=200;assert.equal(rigStatus(backlog),'down');
