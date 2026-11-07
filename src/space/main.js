@@ -1,3 +1,5 @@
+import { chronosExamples } from './chronos.js';
+import { atlasExamples } from './atlas.js';
 import { setupMobileUI } from './mobile-ui.js';
 import './style.css';
 import { content } from './content.js';
@@ -69,7 +71,7 @@ function scrollReader(delta,absolute=false){if(!universe?.seated||universe.suspe
 function updateReaderUI(){const seated=!!universe?.seated;document.querySelector('#reader-accessible').textContent=seated?universe.world.chapters.map(section=>section.join('. ')).join('\n\n'):'';document.querySelector('#laptop-controls').hidden=!seated;document.body.classList.toggle('seated',seated);if(seated)updateReaderHint();else hideReaderCue();}
 
 function renderText(){
- const indexes=worldIndex>=0?[worldIndex]:[0,1,2,3,4];document.querySelector('#text-content').innerHTML=indexes.map(index=>`<section><h2>${worldNames[language][index]}</h2>${exhibitsFor(index,language).map(e=>`<article><h3>${e.title}</h3><p>${e.subtitle||''}</p><p>${e.body.replaceAll('\n','<br>')}</p>${e.url?`<a href="${e.url}" target="_blank" rel="noopener">${ui().open} ↗</a>`:''}</article>`).join('')}</section>`).join('');
+ const indexes=worldIndex>=0?[worldIndex]:[0,1,2,3,4];document.querySelector('#text-content').innerHTML=indexes.map(index=>`<section><h2>${worldNames[language][index]}</h2>${exhibitsFor(index,language).map((e,n)=>`<article><h3>${e.title}</h3><p>${e.subtitle||''}</p><p>${e.body.replaceAll('\n','<br>')}</p>${[1,3].includes(index)?`<p>${language==='id'?'Ilustrasi konseptual':'Conceptual illustration'}: ${(index===1?chronosExamples(language):atlasExamples(language))[n].join(' / ')}</p>`:''}${e.url?`<a href="${e.url}" target="_blank" rel="noopener">${ui().open} ↗</a>`:''}</article>`).join('')}</section>`).join('');
 }
 async function route(){
  const slug=location.hash.replace(/^#\/?/,'').split('/')[0],next=routes.indexOf(slug);if(next===worldIndex&&universe?.mode===(next>=0?'world':'orbit'))return;

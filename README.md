@@ -40,9 +40,9 @@ Di dalam destinasi, WASD digunakan untuk berjalan, mouse/drag untuk melihat, dan
 ## Destinasi
 
 - `#/origin`: apartemen elegan 10 × 11 meter dengan kayu hangat, furnitur senada, dapur modular menyatu, meja makan, ruang tamu, kamar, kamar mandi dan workstation tiga monitor, keyboard, mouse, laptop serta PC. Biografi dibuka melalui workstation; buku, globe, bingkai, TV dan lampu memiliki interaksi lain.
-- `#/chronos`: arsip enam bab overseas banking dengan koridor monumental, artefak berbeda, pilihan konteks konseptual bilingual, progres pemulihan fragmen, dan akses langsung ke cerita pengalaman. Seluruh aturan contoh bersifat ilustratif.
+- `#/chronos`: arsip enam bab overseas banking dengan koridor monumental, artefak berbeda, pilihan konteks konsevenual bilingual, progres pemulihan fragmen, dan akses langsung ke cerita pengalaman. Seluruh aturan contoh bersifat ilustratif.
 - `#/nova`: enam kendaraan dengan siluet berbeda—interceptor, explorer, shuttle kru, lander, rover dan cargo. Konsol ditempatkan di luar radius putar kendaraan. Keenam cerita proyek berasal dari CV, termasuk monitoring infrastruktur dan penelitian arsitektur.
-- `#/atlas`: tujuh kristal heksagonal seragam dengan aura, partikel dan orbit magnetik. Isinya membahas keahlian serta pendekatan rekayasa yang relevan dengan pengalaman.
+- `#/atlas`: tujuh zona eksperimen berbeda untuk domain, API, event, data, investigasi, delivery, dan riset arsitektur. Pilihan skenario menampilkan diagram, hasil konseptual bilingual, serta perubahan status perangkat.
 - `#/station`: terminal email, GitHub, LinkedIn dan CV.
 
 ## Sumber utama
@@ -88,3 +88,5 @@ Semua bagian penjelasan dibaca dalam satu dokumen vertikal pada layar objek 3D. 
 ## Kontrol mobile
 
 Pada perangkat sentuh, HUD diringkas menjadi menu navigasi/pengaturan, joystick kiri, dan tombol aksi kontekstual kanan. Geser scene untuk melihat; sensitivitas kamera dapat diatur lewat Menu. Panel aktivitas Chronos dibuka melalui tombol ◈. Cerita memakai panel teks yang dapat digulir langsung. Menu juga menyediakan fullscreen jika browser mendukungnya; portrait, landscape, dan safe area layar ditangani tanpa mengubah isi destinasi.
+
+Chronos dan Atlas menyediakan diagram langkah, perbandingan dua skenario, reset per bab, serta ringkasan ilustrasi pada versi teks. Progres eksplorasi tidak mengunci cerita. Panel aktivitas mobile tetap dibuka melalui ◈; menu mobile tetap hanya berisi kembali ke orbit, sensitivitas kamera, dan fullscreen.

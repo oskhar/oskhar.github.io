@@ -1,5 +1,6 @@
+import { activityPanel } from './activity-panel.js';
 import * as THREE from 'three';
-import { cuboid, materials, ring, glow } from './design.js';
+import { cuboid, ring, glow } from './design.js';
 
 const chapters = [
  ['Validasi tujuan','Destination validation',['Tujuan A','Tujuan B'],['Destination A','Destination B'],'Pilih konteks tujuan sebelum menerapkan aturan.','Select destination context before applying a rule.'],
@@ -44,18 +45,18 @@ export function buildChronos(world){
   const path=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,.24,z),new THREE.Vector3(x*.35,.24,z),new THREE.Vector3((n-2.5)*.65,.24,-8)]),new THREE.LineBasicMaterial({color:0x7a6650,transparent:true,opacity:.35}));world.group.add(path);
   const node=new THREE.Mesh(new THREE.SphereGeometry(.12,12,8),new THREE.MeshBasicMaterial({color:0x566275}));node.position.set((n-2.5)*.65,1.3,-8);world.group.add(node);nodes.push(node);
   bits.forEach(b=>{b.material=b.material.clone();});
-  world.animations.push((dt,time)=>{const active=world.chronosState.selected===n;bits.forEach(b=>{b.scale.setScalar(active?1.04:1);b.material.color.set(world.chronosState.choices[n]===null?0x83e2e0:world.chronosState.choices[n]===0?0xe3c68a:0x9da8ed);});path.material.opacity=world.chronosState.choices[n]!==null?.85:.2;path.material.color.set(world.chronosState.choices[n]!==null?0xe8cc8c:0x566275);node.material.color.set(world.chronosState.choices[n]!==null?0xe8cc8c:active?0x83e2e0:0x566275);if(world.reading===item)world.chronosState.selected=n;});
+  world.animations.push((dt,time)=>{const active=world.chronosState.selected===n;bits.forEach(b=>{b.scale.setScalar(active?1.04:1);b.material.color.set(world.chronosState.choices[n]===null?0x83e2e0:world.chronosState.choices[n]===0?0xe3c68a:0x9da8ed);const choice=world.chronosState.choices[n];const k=bits.indexOf(b);b.visible=choice===null||n===4||n===5||k!==(choice===0?bits.length-1:0);if(n===4)b.material.color.set(choice===1&&k===1?0xed9b83:0x83e2e0);if(n===5)b.scale.y=choice===1?1: k===0?1:.65;});path.material.opacity=world.chronosState.choices[n]!==null?.85:.2;path.material.color.set(world.chronosState.choices[n]!==null?0xe8cc8c:0x566275);node.material.color.set(world.chronosState.choices[n]!==null?0xe8cc8c:active?0x83e2e0:0x566275);if(world.reading===item)world.chronosState.selected=n;});
  });
  box([5,.18,1.1],[0,.8,-8],gold);glow(world.group,0x7ccee2,6,[0,2,-8],.15);
- const panel=document.createElement('section');panel.className='chronos-console';panel.hidden=true;panel.setAttribute('aria-label','Chronos');document.body.append(panel);
- let signature='';
- function render(){const id=world.language==='id',state=world.chronosState,n=state.selected,c=chapters[n],done=state.choices.filter(v=>v!==null).length;const nextSignature=[id,n,...state.choices].join();if(signature===nextSignature)return;signature=nextSignature;
- panel.replaceChildren();const small=document.createElement('small');small.textContent=`CHRONOS / ${id?'ARSIP HIDUP':'LIVING ARCHIVE'} · ${done}/6`;panel.append(small);
- const nav=document.createElement('div');nav.className='chronos-chapters';chapters.forEach((ch,i)=>{const b=document.createElement('button');b.textContent=String(i+1).padStart(2,'0')+(state.choices[i]!==null?' ✓':'');b.setAttribute('aria-label',ch[id?0:1]);b.setAttribute('aria-pressed',String(i===n));b.onclick=()=>{state.selected=i;world.universe.release();world.universe.visitExhibit(i);render();};nav.append(b);});panel.append(nav);
- const title=document.createElement('h2');title.textContent=c[id?0:1];panel.append(title);const hint=document.createElement('p');hint.textContent=id?'Pulihkan enam fragmen arsip. Pilih konteks untuk mengungkap hubungan tiap bab.':'Restore six archive fragments. Choose a context to reveal each chapter’s connection.';panel.append(hint);
- const controls=document.createElement('div');controls.className='chronos-options';c[id?2:3].forEach((label,i)=>{const b=document.createElement('button');b.textContent=label;b.setAttribute('aria-pressed',String(state.choices[n]===i));b.onclick=()=>{state.choices[n]=i;render();};controls.append(b);});panel.append(controls);
- const result=document.createElement('p');result.setAttribute('role','status');result.textContent=state.choices[n]===null?(id?'Pilih satu konteks untuk mengaktifkan fragmen.':'Choose a context to activate this fragment.'):(outcomes[n][id?0:1][state.choices[n]]+' '+c[id?4:5]+' '+(done===6?(id?'Keenam fragmen terhubung. Arsip telah dipulihkan.':'All six fragments connected. Archive restored.') : ''));panel.append(result);
- const read=document.createElement('button');read.textContent=id?'Baca cerita pengalaman ↗':'Read the experience ↗';read.onclick=()=>{world.universe.release();world.universe.sit(world.interactables[n]);window.dispatchEvent(new Event('chronos-reading'));};panel.append(read);const note=document.createElement('small');note.textContent=id?'Ilustrasi konseptual · data dan aturan fiktif':'Conceptual illustration · fictional data and rules';panel.append(note);
- }
- setInterval(()=>{panel.hidden=world.universe.world!==world||world.universe.mode!=='world'||world.universe.suspended||world.universe.seated;if(!panel.hidden)render();},200);
+ const diagrams=[
+ [[['Tujuan A','Identitas dasar','Validasi konteks'],['Tujuan B','Informasi tambahan','Validasi konteks']], [['Destination A','Basic identity','Context validation'],['Destination B','Additional information','Context validation']]],
+ [[['Identitas umum','Pemeriksaan format','Tinjau konteks'],['Konteks IBAN','Konvensi relevan','Tinjau konteks']], [['General identity','Format check','Review context'],['IBAN context','Relevant convention','Review context']]],
+ [[['Institusi lokal','Konteks tujuan'],['Entitas induk','Cabang overseas','Konteks tujuan']], [['Local institution','Destination context'],['Parent entity','Overseas branch','Destination context']]],
+ [[['Konteks A','Validasi A','Keputusan A'],['Konteks B','Validasi B','Keputusan B']], [['Context A','Validation A','Decision A'],['Context B','Validation B','Decision B']]],
+ [[['Field awal: DEMO-A','Field antara: DEMO-A','Field akhir: DEMO-A'],['Field awal: DEMO-A','Field antara: DEMO-B — tinjau','Alur ditahan']], [['Initial field: DEMO-A','Intermediate field: DEMO-A','Final field: DEMO-A'],['Initial field: DEMO-A','Intermediate field: DEMO-B — review','Flow held']]],
+ [[['Gejala contoh','Periksa konteks','Siapkan verifikasi'],['Skenario awal','Uji perubahan','Catat hasil verifikasi']], [['Example symptom','Inspect context','Prepare verification'],['Original scenario','Test change','Record verification']]],
+ ];
+ activityPanel(world,{name:'CHRONOS',chapters,outcomes,state:world.chronosState,diagrams,description:['Pulihkan enam fragmen arsip. Bandingkan dua konteks dan lihat alurnya berubah.','Restore six archive fragments. Compare two contexts and watch the flow change.']});
 }
+
+export function chronosExamples(language){return outcomes.map(row=>row[language==='id'?0:1]);}
