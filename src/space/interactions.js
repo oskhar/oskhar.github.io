@@ -52,11 +52,11 @@ export class InteractiveLocation {
  endReading(){if(this.reading)this.reading.screen.visible=false;cancelAnimationFrame(this.readerFrame);this.readerFrame=null;this.reading=null;}
 
  update(dt,time,camera,focused){
-  const labels=[],width=innerWidth<760?220:248,height=width*224/768,pixelScale=2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))/innerHeight;
+  const mobile=this.universe.mobileOrbit;const labels=[],width=innerWidth<760?220:248,height=width*224/768,pixelScale=2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))/innerHeight;
   for(const item of this.interactables){
-   const distance=camera.position.distanceTo(item.anchor.position),active=focused===item.id,visible=distance<(item.kind==='boarding'?item.activationDistance:30)&&!this.reading;item.halo.visible=visible;item.cue.visible=visible;item.marker.visible=false;item.marker.material.opacity=active?1:.9;
+   const distance=camera.position.distanceTo(item.anchor.position),active=focused===item.id,visible=distance<(item.kind==='boarding'?item.activationDistance:30)&&!this.reading;item.halo.visible=visible&&(!mobile||active||distance<4);item.cue.visible=visible&&!mobile;item.marker.visible=false;item.marker.material.opacity=active?1:.9;
    const pulse=1+Math.sin(time*1.7+item.anchor.position.x)*.025,scale=.045*pulse*(active?1.15:1);item.halo.scale.set(scale,scale,1);item.marker.scale.set(width*pixelScale,height*pixelScale,1);
-   if(visible){const point=item.anchor.localToWorld(new THREE.Vector3(0,item.markerBaseY,0)).project(camera);if(point.z>-1&&point.z<1&&(active||(Math.abs(point.x)<1.2&&Math.abs(point.y)<1.2)))labels.push({item,point,distance,active,x:(point.x*.5+.5)*innerWidth,y:(.5-point.y*.5)*innerHeight});}
+   if(visible&&(!mobile||active)){const point=item.anchor.localToWorld(new THREE.Vector3(0,item.markerBaseY,0)).project(camera);if(point.z>-1&&point.z<1&&(active||(Math.abs(point.x)<1.2&&Math.abs(point.y)<1.2)))labels.push({item,point,distance,active,x:(point.x*.5+.5)*innerWidth,y:(.5-point.y*.5)*innerHeight});}
   }
   // Keep small floating captions readable when nearby objects share a sightline.
   labels.sort((a,b)=>Number(b.active)-Number(a.active)||a.distance-b.distance);const placed=[];

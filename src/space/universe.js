@@ -184,7 +184,7 @@ export class Universe {
   if(this.flightTravel)this.endFlight();
   this.world?.endReading();this.focusedExhibit=null;this.seated=false;this.release();this.travel=null;this.keys.clear();this.stick={x:0,y:0};this.mode='world';this.landedAt=i;
   if(!this.worlds.has(i))this.worlds.set(i,new DestinationWorld(i,this.language,this));
-  this.world=this.worlds.get(i);addLandingBerth(this.world);this.scene=this.world.scene;this.camera.position.set(0,i===0?1.85:2.1,13);this.look={yaw:0,pitch:0};if(this.world.entry){this.camera.position.fromArray(this.world.entry.position);this.look={yaw:this.world.entry.yaw,pitch:this.world.entry.pitch};}this.currentTarget=-1;this.onMode('world',i);
+  this.world=this.worlds.get(i);addLandingBerth(this.world);this.scene=this.world.scene;this.camera.position.set(0,i===0?1.85:2.1,13);this.look={yaw:0,pitch:0};if(this.world.entry){this.camera.position.fromArray(this.world.entry.position);this.look={yaw:this.world.entry.yaw,pitch:this.world.entry.pitch};}if(this.mobileOrbit){this.camera.fov=innerWidth<innerHeight?75:65;this.camera.updateProjectionMatrix();}this.currentTarget=-1;this.onMode('world',i);
  }
  home(){if(this.flightTravel)this.endFlight({reset:true});this.world?.endReading();this.focusedExhibit=null;this.seated=false;this.release();this.travel=null;this.stick={x:0,y:0};this.mode='orbit';this.world=null;this.scene=this.orbitScene;this.camera.position.set(0,2,24);this.look={yaw:0,pitch:0};this.currentTarget=-1;this.onMode('orbit');}
  sit(item=this.world?.interactables.find(o=>o.kind==='seat')){
@@ -216,8 +216,8 @@ export class Universe {
   const orbitMedia=matchMedia('(max-width:760px), (pointer:coarse)');
   const updateOrbitControls=()=>{this.mobileOrbit=orbitMedia.matches;document.body.classList.toggle('orbit-touch',this.mobileOrbit);if(this.mode==='orbit'){this.pointer.set(0,0);this.pointerChanged=true;if(this.mobileOrbit)this.clampOrbitLook();else this.look={yaw:0,pitch:0};}};
   updateOrbitControls();orbitMedia.addEventListener('change',updateOrbitControls);
-  this.resize=()=>{this.camera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.renderer.setSize(innerWidth,innerHeight);this.cockpit?.resize();if(this.mode==='orbit'&&this.mobileOrbit){this.clampOrbitLook();this.pointerChanged=true;}};window.addEventListener('resize',this.resize);
-  window.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;if(['KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','KeyQ','KeyE'].includes(e.code)){if(this.mode==='world'&&!this.suspended&&!this.seated&&document.querySelector('#guide').hidden){e.preventDefault();this.keys.add(e.code);this.travel=null;}}});
+  this.resize=()=>{if(this.mode==='world'&&!this.seated)this.camera.fov=this.mobileOrbit?(innerWidth<innerHeight?75:65):58;this.camera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.renderer.setSize(innerWidth,innerHeight);this.cockpit?.resize();if(this.mode==='orbit'&&this.mobileOrbit){this.clampOrbitLook();this.pointerChanged=true;}};window.addEventListener('resize',this.resize);
+  window.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;if(['KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','KeyQ','KeyE'].includes(e.code)){if(this.mode==='world'&&!this.suspended&&!this.seated&&document.querySelector('#guide').hidden&&!document.body.classList.contains('mobile-menu-open')){e.preventDefault();this.keys.add(e.code);this.travel=null;}}});
   window.addEventListener('keyup',e=>this.keys.delete(e.code));window.addEventListener('blur',()=>{this.keys.clear();this.stick={x:0,y:0};});
   document.addEventListener('pointerlockchange',()=>{this.active=document.pointerLockElement===this.canvas;this.keys.clear();document.body.classList.toggle('piloting',this.active);});
   document.addEventListener('mousemove',e=>{if(this.active&&!this.seated){this.look.yaw-=e.movementX*.0018;this.look.pitch=THREE.MathUtils.clamp(this.look.pitch-e.movementY*.0018,-1.45,1.45);this.travel=null;}});
@@ -227,7 +227,7 @@ export class Universe {
    if(this.mode==='orbit'&&!this.mobileOrbit){this.pointer.set(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);this.pointerChanged=true;}
    if(previous&&previous.id===e.pointerId){const dx=e.clientX-previous.x,dy=e.clientY-previous.y;
     if(this.mode==='orbit')this.panOrbit(dx,dy);
-    else if(this.mode==='world'){this.look.yaw-=dx*.004;this.look.pitch=THREE.MathUtils.clamp(this.look.pitch-dy*.004,-1.45,1.45);this.travel=null;}
+    else if(this.mode==='world'){const sensitivity=this.mobileOrbit?(this.touchSensitivity??.55)*.004:.004;this.look.yaw-=dx*sensitivity;this.look.pitch=THREE.MathUtils.clamp(this.look.pitch-dy*sensitivity,-1.45,1.45);this.travel=null;}
     previous={x:e.clientX,y:e.clientY,id:e.pointerId};
    }
   });
@@ -245,7 +245,7 @@ export class Universe {
   this.frame=requestAnimationFrame(()=>this.animate());const dt=Math.min(this.clock.getDelta(),.05),time=this.clock.elapsedTime;
   let cameraDriven=false;
   if(this.travel){const travel=this.travel,t=travel.duration?Math.min((performance.now()-travel.start)/travel.duration,1):1,s=t*t*(3-2*t);this.camera.position.lerpVectors(travel.from,travel.to,s);this.camera.quaternion.slerpQuaternions(travel.fromRotation,travel.toRotation,s);cameraDriven=true;const euler=new THREE.Euler().setFromQuaternion(this.camera.quaternion,'YXZ');this.look={yaw:euler.y,pitch:euler.x};if(t===1)this.travel=null;}
-  else if(this.mode==='world'&&!this.suspended&&!this.seated&&document.querySelector('#guide').hidden){
+  else if(this.mode==='world'&&!this.suspended&&!this.seated&&document.querySelector('#guide').hidden&&!document.body.classList.contains('mobile-menu-open')){
    const dir=new THREE.Vector3((this.keys.has('KeyD')?1:0)-(this.keys.has('KeyA')?1:0)+this.stick.x,0,(this.keys.has('KeyS')?1:0)-(this.keys.has('KeyW')?1:0)+this.stick.y);if(dir.length()>1)dir.normalize();dir.applyAxisAngle(new THREE.Vector3(0,1,0),this.look.yaw);this.camera.position.addScaledVector(dir,dt*(this.world.index===0?(this.keys.has('ShiftLeft')?3.8:2.5):(this.keys.has('ShiftLeft')?5:3.2)));
    this.camera.position.x=THREE.MathUtils.clamp(this.camera.position.x,-21,21);this.camera.position.z=THREE.MathUtils.clamp(this.camera.position.z,this.world.endZ,this.world.bounds?.maxZ??14);this.camera.position.y=this.world.index===0?1.65:1.85;this.world.collisions(this.camera.position);
   }

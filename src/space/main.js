@@ -1,3 +1,4 @@
+import { setupMobileUI } from './mobile-ui.js';
 import './style.css';
 import { content } from './content.js';
 import { FlightDirector } from './flight.js';
@@ -112,7 +113,7 @@ window.addEventListener('hashchange',route);window.addEventListener('keydown',e=
 });
 window.addEventListener('wheel',e=>{if(!universe?.seated||universe.suspended||!readerHit(e.clientX,e.clientY))return;e.preventDefault();const delta=e.deltaY*(e.deltaMode===1?28:e.deltaMode===2?innerHeight:1);scrollReader(delta*readerScrollScale());},{passive:false});
 const joystick=document.querySelector('#joystick'),knob=joystick.firstElementChild;let joystickPointer=null;
-function moveStick(e){if(e.pointerId!==joystickPointer)return;const box=joystick.getBoundingClientRect(),dx=e.clientX-box.left-box.width/2,dy=e.clientY-box.top-box.height/2,length=Math.max(35,Math.hypot(dx,dy)),x=dx/length,y=dy/length;knob.style.transform=`translate(${x*30}px,${y*30}px)`;if(universe)universe.stick={x,y};}
+function moveStick(e){if(e.pointerId!==joystickPointer)return;const box=joystick.getBoundingClientRect(),dx=e.clientX-box.left-box.width/2,dy=e.clientY-box.top-box.height/2,length=Math.max(35,Math.hypot(dx,dy)),x=dx/length,y=dy/length;knob.style.transform=`translate(${x*30}px,${y*30}px)`;if(universe){const magnitude=Math.hypot(x,y);universe.stick=magnitude<.12?{x:0,y:0}:{x,y};}}
 joystick.onpointerdown=e=>{if(joystickPointer!==null)return;joystickPointer=e.pointerId;joystick.classList.add('active');joystick.setPointerCapture(e.pointerId);moveStick(e);};joystick.onpointermove=moveStick;function resetStick(){joystickPointer=null;joystick.classList.remove('active');knob.style.transform='';if(universe)universe.stick={x:0,y:0};}
 joystick.onpointerup=joystick.onpointercancel=e=>{if(e.pointerId===joystickPointer)resetStick();};joystick.onlostpointercapture=resetStick;window.addEventListener('blur',resetStick);
 setInterval(()=>{if(worldIndex>=0)updateInteraction(focused);},200);
@@ -120,3 +121,5 @@ function clock(){document.querySelector('#clock').textContent=new Date().toLocal
 try{universe=new Universe(document.querySelector('#universe'),{onNear:updateAim,onMode:()=>{},onExhibit:updateInteraction,onReady:()=>document.body.classList.add('ready')});universe.setLanguage(language);flight.connect(universe);window.__portfolio={universe,go,aim,flight};updateSettings();if(routes.includes(location.hash.replace(/^#\/?/,'')))route();else{document.body.classList.add('targeting');flight.welcome(universe.motion);}}catch(error){console.error('3D initialization:',error);failed=true;document.body.classList.add('text-mode');document.querySelector('#text-content').classList.remove('sr-only');document.querySelector('#text-content').insertAdjacentHTML('afterbegin',`<p>${c().noWebGL}</p>`);}
 
 window.addEventListener('chronos-reading',()=>{updateReaderUI();updateWorld();});
+
+setupMobileUI(()=>universe);

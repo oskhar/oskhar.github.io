@@ -84,3 +84,7 @@ Kaca depan shuttle bersifat panoramik tanpa tiang tengah. Kamera menghadap pintu
 Tombol kembali ke orbit memakai aksen emas kontras dan glow lembut, dengan animasi glow dimatikan pada reduced motion. Keenam altar Nova selalu memiliki kendaraan: lander dan rover native tampil sampai model eksternal terverifikasi selesai dimuat. Bila model gagal dimuat, kendaraan native dipertahankan; model yang berhasil dipasang diselaraskan kembali ke permukaan altar.
 
 Semua bagian penjelasan dibaca dalam satu dokumen vertikal pada layar objek 3D. Scroll wheel, drag/swipe, serta tombol atas/bawah atau Page Up/Down menggulir bacaan; indikator dan scrollbar menunjukkan kelanjutannya. Klik di dalam layar tidak menutup bacaan. Kursor di luar layar menampilkan petunjuk melanjutkan eksplorasi, dan klik di luar atau tombol Kembali eksplorasi menutup bacaan. Tombol pergantian bagian kiri/kanan dihapus.
+
+## Kontrol mobile
+
+Pada perangkat sentuh, HUD diringkas menjadi menu navigasi/pengaturan, joystick kiri, dan tombol aksi kontekstual kanan. Geser scene untuk melihat; sensitivitas kamera dapat diatur lewat Menu. Panel aktivitas Chronos dibuka melalui tombol ◈. Cerita memakai panel teks yang dapat digulir langsung. Menu juga menyediakan fullscreen jika browser mendukungnya; portrait, landscape, dan safe area layar ditangani tanpa mengubah isi destinasi.
