@@ -22,8 +22,8 @@ export function createLabConsole(world,focusRig){
   const form=el('div','');form.className='lab-parameters';
   def.params.forEach(([key,local,english,min,max,initial,unit])=>{
    const label=el('label','',form);const row=el('span','',label);el('span',id?local:english,row);const value=el('output',state().params[key]+unit,row);value.htmlFor='lab-param-'+key;
-   const input=el('input','',label);input.id='lab-param-'+key;input.type='range';input.min=min;input.max=max;input.step=key==='latency'||key==='delay'?50:key==='rows'?100:1;input.value=state().params[key];input.dataset.param=key;
-   input.oninput=()=>{state().params[key]=Number(input.value);value.textContent=input.value+unit;};
+   const input=el('input','',label);input.id='lab-param-'+key;input.type='range';input.min=min;input.max=key==='down'?state().params.workers:max;input.step=key==='latency'||key==='delay'?50:key==='rows'?100:1;input.value=state().params[key];input.dataset.param=key;
+   input.oninput=()=>{state().params[key]=Number(input.value);value.textContent=input.value+unit;if(key==='workers'){const down=panel.querySelector('[data-param="down"]');down.max=input.value;state().params.down=Math.min(state().params.down,Number(input.value));down.value=state().params.down;down.previousElementSibling.querySelector('output').textContent=state().params.down;}};
   });
   const actions=el('div','');actions.className='lab-actions';
   const run=el('button',def.action[id?0:1],actions);run.dataset.action='run';run.onclick=()=>{labAction(state());if(n===4){const input=panel.querySelector('[data-param="failure"]');input.value=0;input.previousElementSibling.querySelector('output').textContent='0%';}if(n===5)updateToggle();announce(id?'Eksperimen dijalankan.':'Experiment triggered.');};
