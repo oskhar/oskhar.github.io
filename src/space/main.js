@@ -118,3 +118,5 @@ joystick.onpointerup=joystick.onpointercancel=e=>{if(e.pointerId===joystickPoint
 setInterval(()=>{if(worldIndex>=0)updateInteraction(focused);},200);
 function clock(){document.querySelector('#clock').textContent=new Date().toLocaleTimeString('en-GB',{timeZone:'Asia/Jakarta',hour:'2-digit',minute:'2-digit'})+' WIB';}clock();setInterval(clock,30000);localize();
 try{universe=new Universe(document.querySelector('#universe'),{onNear:updateAim,onMode:()=>{},onExhibit:updateInteraction,onReady:()=>document.body.classList.add('ready')});universe.setLanguage(language);flight.connect(universe);window.__portfolio={universe,go,aim,flight};updateSettings();if(routes.includes(location.hash.replace(/^#\/?/,'')))route();else{document.body.classList.add('targeting');flight.welcome(universe.motion);}}catch(error){console.error('3D initialization:',error);failed=true;document.body.classList.add('text-mode');document.querySelector('#text-content').classList.remove('sr-only');document.querySelector('#text-content').insertAdjacentHTML('afterbegin',`<p>${c().noWebGL}</p>`);}
+
+window.addEventListener('chronos-reading',()=>{updateReaderUI();updateWorld();});

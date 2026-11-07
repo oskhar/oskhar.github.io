@@ -1,3 +1,4 @@
+import { buildChronos } from './chronos.js';
 import * as THREE from 'three';
 import { InteractiveLocation, block } from './interactions.js';
 import { CozyHome } from './home.js';
@@ -11,8 +12,8 @@ export class DestinationWorld extends InteractiveLocation {
   const colors=[0xb8dfd0,0xd9bb7a,0x7fb9e0,0x77d8ef,0x9fbfdf],accent=colors[index];const metal=materials.metal,glowMat=new THREE.MeshBasicMaterial({color:accent});
   const b=(size,pos,mat=metal)=>block(this.group,size,pos,mat);const floor=new THREE.MeshStandardMaterial({color:0x132330,metalness:.35,roughness:.6});b([23,.4,23],[0,0,0],floor);
   this.scene.background=new THREE.Color(index===1?'#090b19':index===2?'#08131d':'#06131f');this.scene.fog=new THREE.FogExp2(this.scene.background,.004);
-  for(let x=-10;x<=10;x+=2)for(let z=-10;z<=10;z+=2){b([1.98,.008,.012],[x,.205,z],new THREE.MeshBasicMaterial({color:0x294350}));b([.012,.008,1.98],[x,.205,z],new THREE.MeshBasicMaterial({color:0x294350}));}
-  const center=ring(this.group,2.1,.218,accent,.012);ring(this.group,2.3,.218,accent,.004);
+  if(index!==1)for(let x=-10;x<=10;x+=2)for(let z=-10;z<=10;z+=2){b([1.98,.008,.012],[x,.205,z],new THREE.MeshBasicMaterial({color:0x294350}));b([.012,.008,1.98],[x,.205,z],new THREE.MeshBasicMaterial({color:0x294350}));}
+  if(index!==1){ring(this.group,2.1,.218,accent,.012);ring(this.group,2.3,.218,accent,.004);}
   const fill=new THREE.DirectionalLight(0x9bc4e3,.7);fill.position.set(0,4,10);this.scene.add(fill);const back=new THREE.DirectionalLight(0xf2d4b3,.45);back.position.set(0,3,-10);this.scene.add(back);
   const cards=exhibitsFor(index,language);
   if(index===1)this.archive(cards,accent);
@@ -23,17 +24,7 @@ export class DestinationWorld extends InteractiveLocation {
  }
  addAltar(x,z,color,options){const a=altar(this.group,x,z,color,options);this.altars.push(a);const box=new THREE.Box3(new THREE.Vector3(x-a.radius-.18,.2,z-a.radius-.18),new THREE.Vector3(x+a.radius+.18,a.top,z+a.radius+.18));this.colliders.push(box);return a;}
  archive(cards,color){
-  // A ring of kinetic memory sculptures, not walls of text.
-  cards.forEach((card,n)=>{const angle=-Math.PI/3+n*Math.PI/3,x=Math.cos(angle)*6.2,z=Math.sin(angle)*6.2;
-   const base=this.addAltar(x,z,color,{radius:1.05,height:.68}),sculpture=new THREE.Group();sculpture.position.set(x,1.82,z);this.group.add(sculpture);
-   const heart=new THREE.Mesh(new THREE.IcosahedronGeometry(.36,1),new THREE.MeshPhysicalMaterial({color:0x7da7bf,emissive:0x4e7d9b,emissiveIntensity:.3,metalness:.5,roughness:.16,clearcoat:1}));sculpture.add(heart);
-   const frames=[];for(let i=0;i<2;i++){const frame=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(.78+i*.25,.78+i*.25,.78+i*.25)),new THREE.LineBasicMaterial({color:i?0xc1a267:0x93c9df,transparent:true,opacity:.8}));frame.rotation.set(i*.5,i*.7,i*.3);sculpture.add(frame);frames.push(frame);}
-   const orbits=[];for(let i=0;i<2;i++)orbits.push(ring(sculpture,.8+i*.17,0,color,.012,[.6+i*.9,.4+i*.4,0]));
-   const beam=new THREE.Mesh(new THREE.CylinderGeometry(.04,.2,1,24,1,true),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.08,blending:THREE.AdditiveBlending,depthWrite:false}));beam.position.set(x,1.17,z);this.group.add(beam);glow(sculpture,0x8cbfd8,3,[0,0,0],.22);
-   const item=this.addStory(n,[x,1.6,z],this.inwardScreen(x,z,1.65,1.6),color);
-   this.animations.push((dt,time)=>{base.update(dt,time,item.activated);sculpture.position.y=1.82+Math.sin(time*.7+n)*.12;heart.rotation.y+=dt*.22;frames.forEach((f,i)=>{f.rotation.x+=dt*.09*(i?1:-1);f.rotation.z+=dt*.13;});orbits.forEach((r,i)=>r.rotation.y+=dt*(i?-.18:.14));beam.material.opacity=item.activated?.18:.07;});
-  });
-  for(let n=0;n<6;n++){const a=n*Math.PI/3;const arch=new THREE.Mesh(new THREE.TorusGeometry(1.9,.025,8,80,Math.PI),new THREE.MeshBasicMaterial({color:0x405f75,transparent:true,opacity:.5}));arch.position.set(Math.cos(a)*8.5,0,Math.sin(a)*8.5);arch.rotation.y=-a+Math.PI/2;this.group.add(arch);}
+  buildChronos(this);
  }
  laboratory(cards){
   cards.forEach((card,n)=>{const angle=-Math.PI/2+n*Math.PI*2/cards.length,x=Math.cos(angle)*6.2,z=Math.sin(angle)*6.2,color=new THREE.Color().setHSL(.48+n*.028,.55,.66);

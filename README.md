@@ -40,7 +40,7 @@ Di dalam destinasi, WASD digunakan untuk berjalan, mouse/drag untuk melihat, dan
 ## Destinasi
 
 - `#/origin`: apartemen elegan 10 × 11 meter dengan kayu hangat, furnitur senada, dapur modular menyatu, meja makan, ruang tamu, kamar, kamar mandi dan workstation tiga monitor, keyboard, mouse, laptop serta PC. Biografi dibuka melalui workstation; buku, globe, bingkai, TV dan lampu memiliki interaksi lain.
-- `#/chronos`: enam tema overseas banking yang tercantum dalam CV, diwakili patung memori dan altar beranimasi.
+- `#/chronos`: arsip enam bab overseas banking dengan koridor monumental, artefak berbeda, pilihan konteks konseptual bilingual, progres pemulihan fragmen, dan akses langsung ke cerita pengalaman. Seluruh aturan contoh bersifat ilustratif.
 - `#/nova`: enam kendaraan dengan siluet berbeda—interceptor, explorer, shuttle kru, lander, rover dan cargo. Konsol ditempatkan di luar radius putar kendaraan. Keenam cerita proyek berasal dari CV, termasuk monitoring infrastruktur dan penelitian arsitektur.
 - `#/atlas`: tujuh kristal heksagonal seragam dengan aura, partikel dan orbit magnetik. Isinya membahas keahlian serta pendekatan rekayasa yang relevan dengan pengalaman.
 - `#/station`: terminal email, GitHub, LinkedIn dan CV.
