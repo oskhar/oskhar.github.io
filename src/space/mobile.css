@@ -47,3 +47,7 @@
  .mobile-game #mobile-drawer #return-orbit:before,.mobile-game #mobile-drawer #return-orbit:after{display:none}
  .mobile-game #mobile-drawer .destination{padding:12px;flex-direction:row}
 }
+@media(max-width:760px),(pointer:coarse){
+ .mobile-game #space-loading.flight-mode .pilot-navigation{transform:none;width:auto;text-align:center}
+ .mobile-game #space-loading #pilot-phase{white-space:normal;line-height:1.6}
+}
