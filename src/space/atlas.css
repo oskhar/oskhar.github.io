@@ -3,3 +3,23 @@
 .lab-server-list{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:10px 0}.lab-server-list span{font-size:9px;padding:6px;border-left:3px solid #fff;background:#09202b;border-radius:4px}.atlas-hover-preview[hidden],.lab-controls-toggle[hidden]{display:none!important}
 .lab-parameters select{width:100%;min-height:44px;margin-top:7px;padding:9px;border:1px solid #7cb8b74d;border-radius:9px;background:#0c2432;color:#e3f0eb;font:inherit;font-size:12px}.lab-advanced{margin:14px 0;border:1px solid #759aa52b;border-radius:10px;padding:12px}.lab-advanced summary{cursor:pointer;font-size:12px;color:#b9d9d5;min-height:30px}.lab-advanced[open] .lab-parameters{margin-top:10px}.atlas-lab-console .lab-help{font-size:10px;line-height:1.6;letter-spacing:0;color:#90b0bd;margin-top:6px}
 .lab-server-diagnostics summary{font-size:12px;color:#b1d2d0;cursor:pointer;min-height:32px;padding:8px 0}.atlas-lab-console>.lab-status{min-height:0;font-size:11px;line-height:1.65}
+
+/* Keep navigation behind an explicit mode choice and use readable touch targets. */
+.atlas-lab-console{width:min(420px,calc(100vw - 48px));box-sizing:border-box;max-height:calc(100dvh - 180px)}
+.atlas-lab-console button,.atlas-lab-console select,.lab-mode-menu summary,.lab-advanced summary,.lab-server-diagnostics summary{min-height:48px;font-size:14px;padding:12px 16px;box-sizing:border-box}
+.atlas-lab-console button{cursor:pointer;line-height:1.45}
+.atlas-lab-console button:disabled{opacity:.5;cursor:default}
+.atlas-lab-console select{width:100%;margin-top:8px;color:#e5f7f3;background:#102b38;border:1px solid #80babc60;border-radius:10px}
+.atlas-lab-console select:focus-visible,.atlas-lab-console summary:focus-visible{outline:2px solid #f4cc98;outline-offset:3px}
+.atlas-lab-console p{font-size:14px;line-height:1.7}
+.lab-mode-menu{margin:16px 0;border:1px solid #80babc40;border-radius:12px;background:#9bd6dc0a}
+.lab-mode-menu summary,.lab-advanced summary,.lab-server-diagnostics summary{cursor:pointer;line-height:1.6}
+.lab-mode-options{display:grid;gap:10px;padding:0 12px 12px}
+.lab-mode-options button{text-align:left;font-weight:600}
+.lab-mode-options button span{display:block;font-size:12px;font-weight:400;margin-top:5px}
+.lab-stations{display:grid;grid-template-columns:1fr;gap:8px;margin:16px 0}
+.lab-stations button{padding:12px 16px;font-size:14px;text-align:left;min-height:48px}
+.lab-actions,.lab-tools{display:grid;grid-template-columns:1fr;gap:10px}
+.lab-parameters{gap:18px}.lab-parameters label>span{font-size:14px}.lab-parameters input{min-height:44px}
+.lab-controls-toggle{min-height:52px;font-size:15px;padding:12px 20px}
+.atlas-lab-console[hidden]{display:none!important}
