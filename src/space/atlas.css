@@ -23,3 +23,25 @@
 .lab-parameters{gap:18px}.lab-parameters label>span{font-size:14px}.lab-parameters input{min-height:44px}
 .lab-controls-toggle{min-height:52px;font-size:15px;padding:12px 20px}
 .atlas-lab-console[hidden]{display:none!important}
+
+/* Compact controls: blue navigates, green runs, yellow configures, red resets. */
+.atlas-lab-console button{background:#123e69;border-color:#2875b6;color:#e3f1ff;font-weight:600;min-height:44px;padding:10px 12px}
+.atlas-lab-console button[aria-pressed=true]{background:#1959a0;border-color:#58abff;color:#f0f7ff}
+.atlas-lab-console .lab-actions button[data-action=run]{background:#138353;border-color:#37d49a;color:#fff}
+.atlas-lab-console button[data-action=toggle],.atlas-lab-console button[data-action=pause]{background:#654917;border-color:#d6a52a;color:#ffdb76}
+.atlas-lab-console button[data-action=toggle][aria-pressed=true]{background:#176344;border-color:#37d49a;color:#bdfbe0}
+.atlas-lab-console button[data-action=reset],.atlas-lab-console button[data-action=toggle]:not([aria-pressed]){background:#742e39;border-color:#dc6578;color:#ffe1e6}
+.atlas-lab-console button:disabled{opacity:.45}
+.lab-actions,.lab-tools{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.lab-stations{grid-template-columns:repeat(2,minmax(0,1fr));max-height:240px;overflow:auto;gap:6px;margin:8px 0}
+.lab-stations button{font-size:12px;padding:10px;min-height:44px}
+.lab-catalog summary,.lab-explanation summary{padding:10px 0;cursor:pointer;color:#77bdff;font-size:13px;min-height:44px;box-sizing:border-box}
+.lab-legend{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0;font-size:10px}
+.lab-diagram{margin:10px 0}
+.lab-trend{display:block;width:100%;height:44px;margin-top:8px}
+.lab-parameters{gap:10px}.lab-parameters label>span{font-size:12px}
+.atlas-lab-console .lab-disclaimer{letter-spacing:0!important}
+.lab-controls-toggle{background:#155c9e;border-color:#418dd1;color:#edf7ff}
+.atlas-lab-console h2{font-size:21px;margin-bottom:8px}
+.lab-console-header>button:last-child{background:#742e39;border-color:#dc6578;color:#ffe1e6}
+@media(max-width:380px){.lab-stations{grid-template-columns:1fr}.lab-actions,.lab-tools{grid-template-columns:1fr}}

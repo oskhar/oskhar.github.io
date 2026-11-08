@@ -1,3 +1,4 @@
+import {extraToggle,drawExtra} from './atlas-extra.js';
 import {labGoals,controlHelp,toggleLabel,labFeedback} from './atlas-guidance.js';
 import {statusColors,statusNames,serverStatus} from './atlas-status.js';
 import { labDefinitions,labAction,labToggle,replayProjection,labMetrics,createLabState,stepLab } from './atlas-simulation.js';
@@ -7,33 +8,25 @@ export function createLabConsole(world,focusRig){
  const panel=document.createElement('section');panel.className='atlas-lab-console';panel.id='atlas-lab-console';panel.hidden=true;panel.setAttribute('aria-label','Atlas backend playground');document.body.append(panel);
  const toggle=document.createElement('button');toggle.className='lab-controls-toggle';toggle.textContent='☰ Atlas menu';toggle.setAttribute('aria-controls',panel.id);document.body.append(toggle);toggle.onclick=()=>{world.lab.controlsOpen=!world.lab.controlsOpen;};
  const preview=document.createElement('aside');preview.className='atlas-hover-preview';preview.hidden=true;preview.setAttribute('aria-label','Diagram preview');const previewTitle=document.createElement('span');preview.append(previewTitle);const previewCanvas=document.createElement('canvas');previewCanvas.width=640;previewCanvas.height=260;preview.append(previewCanvas);document.body.append(preview);
- let consoleMode='explore';
+ let diagram=null,charts=[],histories=new Map(),chartTime=0;
  let signature='',metricTime=0;let metricNodes=[],status=null,serverNodes=[];
  const state=()=>world.lab.states[world.lab.selected];
  function render(){
   const id=world.language==='id',n=world.lab.selected,def=labDefinitions[n];const next=[id,n].join();if(signature===next)return;signature=next;
   panel.replaceChildren();
   const el=(tag,text,parent=panel)=>{const node=document.createElement(tag);if(text)node.textContent=text;parent.append(node);return node;};
-  const header=el('div','');header.className='lab-console-header';el('span','ATLAS / LIVE LAB',header);const pause=el('button',world.lab.paused?(id?'Lanjutkan lab':'Resume lab'):(id?'Jeda lab':'Pause lab'),header);pause.dataset.action='pause';pause.onclick=()=>{world.lab.paused=!world.lab.paused;pause.textContent=world.lab.paused?(id?'Lanjutkan lab':'Resume lab'):(id?'Jeda lab':'Pause lab');pause.setAttribute('aria-pressed',String(world.lab.paused));};pause.setAttribute('aria-pressed',String(world.lab.paused));
+  const header=el('div','');header.className='lab-console-header';el('span','ATLAS / LIVE LAB',header);const pause=el('button',world.lab.paused?(id?'▶ Lanjut':'▶ Resume'):(id?'Ⅱ Jeda':'Ⅱ Pause'),header);pause.dataset.action='pause';pause.onclick=()=>{world.lab.paused=!world.lab.paused;pause.textContent=world.lab.paused?(id?'▶ Lanjut':'▶ Resume'):(id?'Ⅱ Jeda':'Ⅱ Pause');pause.setAttribute('aria-pressed',String(world.lab.paused));};pause.setAttribute('aria-pressed',String(world.lab.paused));
   const close=el('button','✕',header);close.ariaLabel=id?'Tutup kontrol':'Close controls';close.onclick=()=>{world.lab.controlsOpen=false;window.dispatchEvent(new Event('close-atlas-controls'));};
-  const modeMenu=el('details','');modeMenu.className='lab-mode-menu';
-  el('summary',id?'Menu Atlas · pilih mode':'Atlas menu · choose mode',modeMenu);
-  const modes=el('div','',modeMenu);modes.className='lab-mode-options';
-  for(const [value,label,help] of [
-   ['explore',id?'Jelajahi Atlas':'Explore Atlas',id?'Lihat ruang lab. Pilih objek untuk mencoba eksperimen.':'Look around the lab. Choose an object to try an experiment.'],
-   ['experiments',id?'Eksperimen':'Experiments',id?'Pilih eksperimen dan ubah parameternya.':'Choose an experiment and adjust its parameters.'],
-  ]){const button=el('button',label,modes);el('span',help,button);button.setAttribute('aria-pressed',String(consoleMode===value));button.onclick=()=>{consoleMode=value;signature='';render();panel.querySelector('.lab-mode-menu summary').focus({preventScroll:true});};}
-  if(consoleMode==='explore'){
-   el('h2',id?'Jelajahi lab backend':'Explore the backend lab');
-   el('p',id?'Geser untuk melihat sekeliling. Klik objek lab, lalu pilih Bereksperimen. Untuk langsung berpindah eksperimen, pilih mode Eksperimen di menu di atas.':'Drag to look around. Click a lab object, then choose Experiment. To switch experiments directly, choose Experiments in the menu above.');
-   metricNodes=[];serverNodes=[];status=null;return;
-  }
-  const legend=el('div','');legend.className='lab-legend';Object.entries(statusColors).forEach(([key,color])=>{const label=el('span',statusNames[id?'id':'en'][key],legend);label.style.setProperty('--status','#'+color.toString(16).padStart(6,'0'));});
+  const legend=el('div','');legend.className='lab-legend';Object.entries(statusColors).forEach(([key,color])=>{const label=el('span',({id:{idle:'Idle',healthy:'Aktif',warning:'Tertunda',down:'Gagal'},en:{idle:'Idle',healthy:'Active',warning:'Delayed',down:'Failed'}})[id?'id':'en'][key],legend);label.style.setProperty('--status','#'+color.toString(16).padStart(6,'0'));});
   serverNodes=[];
-  const nav=el('div','');nav.className='lab-stations';nav.setAttribute('aria-label',id?'Wahana eksperimen':'Experiment rigs');
-  labDefinitions.forEach((d,i)=>{const b=el('button',d.name[id?0:1],nav);b.ariaLabel=d.name[id?0:1];b.title=d.name[id?0:1];b.setAttribute('aria-pressed',String(i===n));b.dataset.rig=i;b.onclick=()=>{world.lab.selected=i;signature='';render();panel.querySelector(`[data-rig="${i}"]`).focus({preventScroll:true});focusRig(i);};});
-  el('small',def.tag);el('h2',def.name[id?0:1]);el('p',(id?'Tujuan: ':'Goal: ')+labGoals[n][id?0:1]).className='lab-hint';
-  status=el('p',labFeedback(state(),id));status.className='lab-status';status.setAttribute('role','status');
+  const nav=el('details','');nav.className='lab-catalog';
+  el('summary',(id?'Eksperimen':'Experiments')+' · '+(n+1)+' / '+labDefinitions.length,nav);
+  const stations=el('div','',nav);stations.className='lab-stations';
+  labDefinitions.forEach((d,i)=>{const b=el('button',d.name[id?0:1],stations);b.title=d.hint[id?0:1];b.setAttribute('aria-pressed',String(i===n));b.dataset.rig=i;b.onclick=()=>{world.lab.selected=i;signature='';render();if(i<7)focusRig(i);};});
+  el('small',def.tag);el('h2',def.name[id?0:1]);
+  diagram=el('canvas','');diagram.width=640;diagram.height=260;diagram.className='lab-diagram';diagram.setAttribute('role','img');diagram.setAttribute('aria-label',def.name[id?0:1]);
+  const help=el('details','');help.className='lab-explanation';el('summary',id?'Cara kerja':'How it works',help);el('p',labGoals[n]?.[id?0:1]||def.hint[id?0:1],help);
+  status=el('p',n>=7?def.hint[id?0:1]:labFeedback(state(),id));status.hidden=n>=7;status.className='lab-status';status.setAttribute('role','status');
   const form=el('div','');form.className='lab-parameters';const advanced=el('details','');advanced.className='lab-advanced';el('summary',id?'Pengaturan lanjutan':'Advanced settings',advanced);const advancedForm=el('div','',advanced);advancedForm.className='lab-parameters';
   const select=(parent,labelText,key,options,current,change)=>{const label=el('label','',parent);el('span',labelText,label);const input=el('select','',label);input.dataset.param=key;for(const [value,text] of options){const option=el('option',text,input);option.value=value;}input.value=current;input.onchange=()=>change(input.value);return input;};
   if(n===1){
@@ -52,21 +45,26 @@ export function createLabConsole(world,focusRig){
   def.params.forEach(([key,local,english,min,max,initial,unit])=>{
    if(key==='failure'||key==='defect')return;const extra=['latency','rate','delay','coupling'].includes(key);const label=el('label','',extra?advancedForm:form);const row=el('span','',label);el('span',id?local:english,row);const value=el('output',state().params[key]+unit,row);value.htmlFor='lab-param-'+key;
    const input=el('input','',label);input.id='lab-param-'+key;input.type='range';input.min=min;input.max=max;input.step=key==='latency'||key==='delay'?50:key==='rows'?100:1;input.value=state().params[key];input.dataset.param=key;
-   input.oninput=()=>{state().params[key]=Number(input.value);value.textContent=input.value+unit;if(n===3){state().running=false;state().progress=0;state().checks=0;}};if(controlHelp[key])el('small',controlHelp[key][id?0:1],label).className='lab-help';
+   input.oninput=()=>{state().params[key]=Number(input.value);value.textContent=input.value+unit;if(n===3){state().running=false;state().progress=0;state().checks=0;}};if(controlHelp[key])input.title=controlHelp[key][id?0:1];
   });
   advanced.hidden=advancedForm.childElementCount===0&&advanced.querySelectorAll('p').length===0;
   const actions=el('div','');actions.className='lab-actions';
-  const run=el('button',def.action[id?0:1],actions);run.dataset.action='run';run.onclick=()=>{labAction(state());if(n===4)panel.querySelector('[data-param="service"]').value='0';if(n===5)updateToggle();announce(id?'Eksperimen dijalankan.':'Experiment triggered.');};
+  const runLabels=[['Ubah aturan','Change rule'],['Lonjakan','Traffic spike'],['+30 event','+30 events'],['Cari','Search'],['Pulihkan','Recover'],['Luncurkan','Deploy'],['Simpan','Write']];
+  const run=el('button','▶ '+(runLabels[n]?.[id?0:1]||def.action[id?0:1]),actions);run.dataset.action='run';run.onclick=()=>{labAction(state());if(n===4)panel.querySelector('[data-param="service"]').value='0';if(n===5)updateToggle();announce(id?'Eksperimen dijalankan.':'Experiment triggered.');};
   let toggle=null;
-  function updateToggle(){if(toggle){toggle.textContent=toggleLabel(state(),id);if(n!==5)toggle.setAttribute('aria-pressed',String(state().toggle));else toggle.disabled=!state().deployed;}}
+  function updateToggle(){if(toggle){toggle.textContent=(n>=7?extraToggle(state(),id):toggleLabel(state(),id));if(n!==5)toggle.setAttribute('aria-pressed',String(state().toggle));else toggle.disabled=!state().deployed;}}
   if(def.toggle){toggle=el('button',def.toggle[id?0:1],actions);toggle.dataset.action='toggle';updateToggle();toggle.onclick=()=>{labToggle(state());if(n===5){state().toggle=true;state().deployed=false;}updateToggle();announce(id?'Konfigurasi diperbarui.':'Configuration updated.');};}
   if(n===6){const replay=el('button',id?'Replay proyeksi':'Replay projection',actions);replay.dataset.action='replay';replay.onclick=()=>{replayProjection(state());announce(id?'Proyeksi dibangun ulang dari event.':'Projection rebuilding from events.');};}
-  const grid=el('dl','');grid.className='lab-metrics';metricNodes=labMetrics(state(),id).map(([label,value])=>{const cell=el('div','',grid);el('dt',label,cell);return el('dd',String(value),cell);});
+  el('small',id?'TREN · 60 SAMPEL · skala per grafik':'TREND · 60 SAMPLES · scale per chart');
+  const grid=el('dl','');grid.className='lab-metrics';charts=[];
+  metricNodes=labMetrics(state(),id).map(([label,value],i)=>{const cell=el('div','',grid);el('dt',label,cell);const dd=el('dd',String(value),cell);
+   if(Number.isFinite(parseFloat(value))){const canvas=el('canvas','',cell);canvas.width=280;canvas.height=64;canvas.className='lab-trend';canvas.setAttribute('role','img');charts.push({canvas,index:i,label});}
+   return dd;});
   if(n===1){const details=el('details','');details.className='lab-server-diagnostics';el('summary',id?'Lihat status tiap server':'Inspect individual servers',details);const list=el('div','',details);list.className='lab-server-list';for(let i=0;i<8;i++)serverNodes.push(el('span','S'+(i+1),list));}
   const tools=el('div','');tools.className='lab-tools';
-  const step=el('button',id?'Maju 1 detik (wahana ini)':'Advance this rig by 1 second',tools);step.dataset.action='step';step.onclick=()=>{for(let i=0;i<20;i++)stepLab(state(),.05);announce(id?'Model maju satu detik.':'Model advanced one second.');};
-  const reset=el('button',id?'Reset wahana':'Reset rig',tools);reset.dataset.action='reset';reset.onclick=()=>{world.lab.states[n]=createLabState(n);signature='';render();panel.querySelector('[data-action="reset"]').focus({preventScroll:true});};
-  const read=el('button',id?'Catatan engineer ↗':'Engineer notes ↗',tools);read.dataset.action='read';read.onclick=()=>{world.universe.release();world.universe.sit(world.interactables[n]);window.dispatchEvent(new Event('chronos-reading'));};
+  const step=el('button','+1s',tools);step.dataset.action='step';step.onclick=()=>{for(let i=0;i<20;i++)stepLab(state(),.05);announce(id?'Model maju satu detik.':'Model advanced one second.');};
+  const reset=el('button','↺ Reset',tools);reset.dataset.action='reset';reset.onclick=()=>{world.lab.states[n]=createLabState(n);histories.delete(n);signature='';render();panel.querySelector('[data-action="reset"]').focus({preventScroll:true});};
+  const read=el('button',id?'Catatan ↗':'Notes ↗',tools);read.hidden=n>=7;read.dataset.action='read';read.onclick=()=>{world.universe.release();world.universe.sit(world.interactables[n]);window.dispatchEvent(new Event('chronos-reading'));};
   el('small',id?'MODEL EDUKASI · Angka simulasi, bukan benchmark produksi.':'TEACHING MODEL · Simulated values, not production benchmarks.').className='lab-disclaimer';
  }
  function announce(message){if(status)status.textContent=message;}
@@ -74,13 +72,17 @@ export function createLabConsole(world,focusRig){
   const visible=world.universe.world===world&&world.universe.mode==='world'&&!world.universe.suspended&&!world.universe.seated;const wanted=world.universe.mobileOrbit?document.body.classList.contains('mobile-detail-open'):world.lab.controlsOpen;panel.hidden=!visible||!wanted;toggle.hidden=!visible||world.universe.mobileOrbit;toggle.textContent=world.language==='id'?'☰ Menu Atlas':'☰ Atlas menu';toggle.setAttribute('aria-expanded',String(!!wanted));
   const hovered=world.lab.hovered;preview.hidden=!visible||world.universe.mobileOrbit||wanted||hovered===null||hovered===undefined;if(!preview.hidden){previewTitle.textContent=labDefinitions[hovered].name[world.language==='id'?0:1];drawLabDiagram(previewCanvas,world.lab.states[hovered],world.universe.motion&&!world.lab.paused);}
   if(!visible||!wanted)return;
-  render();metricTime+=dt||.016;if(metricTime<.1)return;metricTime=0;
+  render();if(diagram)drawLabDiagram(diagram,state(),world.universe.motion&&!world.lab.paused);metricTime+=dt||.016;if(metricTime<.1)return;metricTime=0;
   const s=state(),id=world.language==='id';serverNodes.forEach((node,i)=>{const key=serverStatus(s,i);node.textContent='S'+(i+1)+' · '+(key==='down'?(id?'Restart akibat overload':'Restarting after overload'):statusNames[id?'id':'en'][key]);node.style.borderColor='#'+statusColors[key].toString(16).padStart(6,'0');});labMetrics(s,id).forEach(([,value],i)=>{if(metricNodes[i])metricNodes[i].textContent=String(value);});
-  const feedback=labFeedback(s,id);if(status&&status.textContent!==feedback)status.textContent=feedback;
+  chartTime+=.1;
+  let history=histories.get(s.index);if(!history){history=labMetrics(s,id).map(()=>[]);histories.set(s.index,history);}
+  if(chartTime>=.5){chartTime=0;labMetrics(s,id).forEach(([,value],i)=>{history[i].push(parseFloat(value));if(history[i].length>60)history[i].shift();});}
+  charts.forEach(({canvas,index,label})=>{const points=history[index].filter(Number.isFinite),c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,max=Math.max(1,...points);c.clearRect(0,0,w,h);c.strokeStyle='#234357';c.beginPath();c.moveTo(0,h-8);c.lineTo(w,h-8);c.stroke();c.strokeStyle='#55b4ff';c.fillStyle='#55b4ff';c.lineWidth=3;c.beginPath();points.forEach((v,i)=>{const x=i/59*(w-4)+2,y=h-8-v/max*(h-14);if(i===0)c.moveTo(x,y);else c.lineTo(x,y);});c.stroke();c.fillStyle='#95b8cf';c.font='10px monospace';c.textAlign='right';c.fillText('max '+max,w-3,11);c.fillStyle='#55b4ff';if(points.length){c.beginPath();c.arc((points.length-1)/59*(w-4)+2,h-8-points.at(-1)/max*(h-14),3,0,7);c.fill();}canvas.setAttribute('aria-label',label+': '+points.at(-1)+' · '+(id?'maximum':'maximum')+' '+max);});
+  const feedback=s.index>=7?labDefinitions[s.index].hint[id?0:1]:labFeedback(s,id);if(status&&status.textContent!==feedback)status.textContent=feedback;
 
 
  }
- window.addEventListener('atlas-experiment',()=>{consoleMode='experiments';signature='';});
+ window.addEventListener('atlas-experiment',()=>{signature='';});
  window.addEventListener('hashchange',()=>{panel.hidden=true;preview.hidden=true;toggle.hidden=true;});
  return {update,panel};
 }
@@ -88,6 +90,7 @@ export function createLabConsole(world,focusRig){
 export function drawLabDiagram(canvas,s,motion){
  const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,t=motion?s.time:1;c.clearRect(0,0,w,h);
  c.fillStyle='#07161f';c.fillRect(0,0,w,h);c.strokeStyle='#183642';c.lineWidth=1;for(let x=0;x<w;x+=32){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}for(let y=0;y<h;y+=32){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
+ if(s.index>=7){drawExtra(c,motion?s:{...s,time:1},w,h);return;}
  const cyan='#53e59b',amber='#ffce55',red='#ff5965',dim='#f1f5f9';
  function line(x,y,a,b,color=dim){c.strokeStyle=color;c.lineWidth=3;c.beginPath();c.moveTo(x,y);c.lineTo(a,b);c.stroke();}
  function node(x,y,label,color=cyan,r=24){c.fillStyle='#112936';c.strokeStyle=color;c.lineWidth=2;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();c.stroke();c.fillStyle=color;c.font='15px monospace';c.textAlign='center';c.fillText(label,x,y+5);}

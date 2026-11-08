@@ -115,3 +115,18 @@ Wahana load balancer menampilkan delapan server. Kontrol dasarnya adalah pengunj
 Atlas memakai interior fasilitas riset tertutup: hull bertekanan, airlock dengan jalur keluar yang lapang, plafon layanan dan ventilasi, jendela observasi menuju ruang persiapan sampel, lemari reagen, meja mikroskop, konsol analisis, dan layar instrumen di dinding. Data Helix A-07 berputar di dalam vessel containment pusat. Wahana backend dipasang dalam housing instrumen dengan panel observasi, cap tekanan, probe pemindai, dan penanda keselamatan. Geometri lingkungan statis digabung berdasarkan material untuk membatasi draw call; gerak spesimen serta layar instrumen mengikuti pengaturan motion/pause.
 
 Kontrol seluruh wahana menampilkan tujuan eksperimen, bantuan singkat per input, status tombol yang eksplisit (aktif/mati atau jeda/lanjutkan), dan penjelasan sebab-akibat berikut saran perbaikan. Pengaturan teknis lanjutan disembunyikan secara default. Kondisi layanan luar dan kualitas kandidat rilis dipilih sebagai skenario yang mudah dibaca.
+
+### Atlas: 17 eksperimen backend
+
+Buka **Menu Atlas → Eksperimen** untuk memilih simulasi. Tujuh wahana 3D
+meliputi domain boundaries, load balancing, backpressure, indeks, circuit
+breaker, canary release, dan eventual consistency. Sepuluh eksperimen tambahan
+dijalankan melalui diagram animasi di panel: cache TTL, token-bucket rate
+limiting, exponential backoff, idempotency, replication lag, hash sharding,
+batching, connection pooling, priority scheduling, dan dead-letter queue.
+
+Kirim request, ubah slider, dan gunakan tombol ON/OFF untuk membandingkan hasil.
+**Jeda**, **+1s**, dan **Reset** membantu mengamati perubahan bertahap. Grafik
+menyimpan 60 sampel saat panel terbuka, dengan skala maksimum per metrik.
+Penjelasan tersedia di **Cara kerja**. Semua angka berasal dari model edukasi
+lokal. Jalankan `npm run test:atlas` untuk memeriksa perilaku simulasi.

@@ -1,3 +1,4 @@
+import {extraDefinitions,initExtra,actionExtra,tickExtra,metricsExtra} from './atlas-extra.js';
 // Deliberately simplified teaching models. Values are simulated, never benchmarks.
 export const labDefinitions = [
  {key:'domain',name:['Ruang domain','Domain loom'],tag:'BOUNDARIES',hint:['Geser ketergantungan lintas domain. Isolasi aturan untuk melihat seberapa jauh perubahan merambat.','Adjust cross-domain dependencies. Isolate rules to see how far a change propagates.'],params:[['coupling','Ketergantungan','Coupling',0,100,55,'%']],action:['Ubah satu aturan','Change one rule'],toggle:['Isolasi domain','Isolate domains']},
@@ -7,14 +8,16 @@ export const labDefinitions = [
  {key:'reliability',name:['Ruang gangguan','Failure chamber'],tag:'RESILIENCE',hint:['Suntikkan gangguan ke dependensi. Circuit breaker membatasi percobaan saat kegagalan berulang, lalu menguji pemulihan.','Inject dependency faults. A circuit breaker limits repeated failures, then probes recovery.'],params:[['failure','Peluang gagal','Failure probability',0,100,0,'%']],action:['Pulihkan dependensi','Recover dependency'],toggle:['Circuit breaker','Circuit breaker']},
  {key:'delivery',name:['Peluncur canary','Canary launcher'],tag:'RELEASE CONTROL',hint:['Atur porsi traffic ke versi baru dan tingkat cacatnya. Luncurkan canary, amati error, lalu putuskan rollback.','Set new-version traffic share and defect rate. Launch a canary, observe errors, then decide whether to roll back.'],params:[['canary','Pengguna yang mencoba versi baru','Users trying the new release',0,100,20,'%'],['defect','Cacat versi baru','New-version defects',0,100,30,'%']],action:['Luncurkan versi baru','Launch new version'],toggle:['Rollback ke versi stabil','Roll back to stable']},
  {key:'architecture',name:['Mesin read model','Read-model engine'],tag:'EVENTUAL CONSISTENCY',hint:['Tulis perubahan ke sumber data. Atur jeda proyeksi dan lihat read model mengejar event. Replay membangun ulang proyeksi.','Write changes to the source. Adjust projection delay and watch the read model catch up. Replay rebuilds the projection.'],params:[['delay','Jeda proyeksi','Projection delay',0,5000,1500,'ms']],action:['Simpan perubahan baru','Save a new change'],toggle:['Jeda proyeksi','Pause projection']},
+ ...extraDefinitions,
 ];
 
 export function createLabState(index){
  const params=Object.fromEntries(labDefinitions[index].params.map(p=>[p[0],p[5]]));
- return {index,params,toggle:false,time:0,accumulator:0,queue:0,processed:0,rejected:0,active:[],pulses:[],changed:0,checks:0,progress:0,running:false,breaker:'closed',failures:0,cooldown:0,attempts:0,errors:0,blocked:0,deployed:false,version:0,readVersion:0,events:[],seed:100+index,cursor:0,incoming:0,algorithm:'round-robin',profile:'uniform',servers:Array.from({length:8},()=>({queue:0,downUntil:0,heat:0,completed:0}))};
+ const state={index,params,toggle:false,time:0,accumulator:0,queue:0,processed:0,rejected:0,active:[],pulses:[],changed:0,checks:0,progress:0,running:false,breaker:'closed',failures:0,cooldown:0,attempts:0,errors:0,blocked:0,deployed:false,version:0,readVersion:0,events:[],seed:100+index,cursor:0,incoming:0,algorithm:'round-robin',profile:'uniform',servers:Array.from({length:8},()=>({queue:0,downUntil:0,heat:0,completed:0}))};return index>=7?initExtra(state):state;
 }
 function random(s){s.seed=(1664525*s.seed+1013904223)>>>0;return s.seed/4294967296;}
 export function labAction(s){
+ if(s.index>=7){actionExtra(s);return;}
  if(s.index===0){s.changed++;s.pulses=[{age:0}];}
  if(s.index===1)s.incoming+=20;
  if(s.index===2)s.queue=Math.min(200,s.queue+30);
@@ -33,6 +36,7 @@ export function stepLab(s,delta){
 function tick(s,dt){
  s.time+=dt;const p=s.params;
  s.pulses=s.pulses.filter(a=>(a.age+=dt)<2);
+ if(s.index>=7){tickExtra(s,dt);return;}
  if(s.index===1){
   // Local queues make routing choices observable. Red is a modelled protective restart,
   // not a claim that an overloaded real server must necessarily crash.
@@ -74,7 +78,7 @@ function tick(s,dt){
  if(s.index===5&&s.deployed&&Math.floor(s.time*10)!==Math.floor((s.time-dt)*10)){s.attempts++;if(random(s)*100<p.canary&&random(s)*100<p.defect)s.errors++;else s.processed++;}
  if(s.index===6&&!s.toggle){while(s.events.length&&s.events[0].ready<=s.time){s.readVersion=s.events.shift().version;s.processed++;}}
 }
-export function labMetrics(s,id=false){const p=s.params;switch(s.index){
+export function labMetrics(s,id=false){if(s.index>=7)return metricsExtra(s,id);const p=s.params;switch(s.index){
  case 0:return [[id?'Domain terdampak':'Affected domains',s.changed?1+Math.round((s.toggle?0:p.coupling)/100*5):0],[id?'Perubahan aturan':'Rule changes',s.changed]];
  case 1:return [[id?'Antrean':'Queue',Math.floor(s.queue)],[id?'Server sibuk':'Busy servers',s.active.length+'/'+p.workers],[id?'Kapasitas model':'Model capacity',(s.servers.slice(0,p.workers).reduce((sum,server,i)=>sum+(server.downUntil>s.time?0:1000/p.latency/(s.profile==='mixed'&&i===0?3:1)),0)).toFixed(1)+'/s'],[id?'Selesai':'Completed',s.processed],[id?'Request gagal / ditolak':'Failed / rejected requests',Math.floor(s.rejected)]];
  case 2:return [[id?'Antrean':'Queue',Math.floor(s.queue)],[id?'Kapasitas':'Capacity',(s.toggle?0:p.consumers*p.rate)+'/s'],[id?'Diproses':'Processed',Math.floor(s.processed)],[id?'Overflow':'Overflow',Math.floor(s.rejected)]];

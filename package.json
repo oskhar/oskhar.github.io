@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:atlas": "node tests/atlas-simulation.test.mjs"
+    "test:atlas": "node tests/atlas-simulation.test.mjs && node tests/atlas-extra.test.mjs"
   },
   "dependencies": {
     "three": "0.148.0"
