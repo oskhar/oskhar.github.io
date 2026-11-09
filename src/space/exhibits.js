@@ -4,8 +4,8 @@ import { content, projects } from './content.js';
 
 export const routes = ['origin', 'chronos', 'nova', 'atlas', 'station'];
 export const worldNames = {
- en:['The Origin Home','The Chronos Archive','The Nova Expedition','The Atlas Laboratory','Meridian Satellite'],
- id:['Rumah Origin','Arsip Chronos','Ekspedisi Gurun Nova','Laboratorium Atlas','Satelit Meridian'],
+ en:['The Origin Home','The Chronos Violet Wilds','The Nova Expedition','The Atlas Laboratory','Meridian Satellite'],
+ id:['Rumah Origin','Hutan Ungu Chronos','Ekspedisi Gurun Nova','Laboratorium Atlas','Satelit Meridian'],
 };
 export function exhibitsFor(index, language) {
  const c=content[language], id=language==='id';

@@ -40,7 +40,7 @@ Di dalam destinasi, WASD digunakan untuk berjalan, mouse/drag untuk melihat, dan
 ## Destinasi
 
 - `#/origin`: apartemen elegan 10 × 11 meter dengan kayu hangat, furnitur senada, dapur modular menyatu, meja makan, ruang tamu, kamar, kamar mandi dan workstation tiga monitor, keyboard, mouse, laptop serta PC. Biografi dibuka melalui workstation; buku, globe, bingkai, TV dan lampu memiliki interaksi lain.
-- `#/chronos`: arsip enam bab overseas banking dengan koridor monumental, artefak berbeda, pilihan konteks konsevenual bilingual, progres pemulihan fragmen, dan akses langsung ke cerita pengalaman. Seluruh aturan contoh bersifat ilustratif.
+- `#/chronos`: eksplorasi jalan kaki di hutan ungu seluas 660 × 395 meter. Enam kawasan memiliki 36 puzzle: urutan rune, teka-teki, lentera terhubung, jam bulan, ingatan peri, dan lintasan penjaga. WASD berjalan, Shift kiri/kanan berlari, Spasi melompat, E berinteraksi, M membuka peta. Ada jembatan, batang tumbang, bola kabut, checkpoint, petunjuk, progres segel tersimpan lokal, enam terminal cerita pengalaman, serta Jantung Hutan yang dibuka setelah 36 segel pulih. Mobile menyediakan tombol tahan lari dan lompat.
 - `#/nova`: enam kendaraan dengan siluet berbeda—interceptor, explorer, shuttle kru, lander, rover dan cargo. Konsol ditempatkan di luar radius putar kendaraan. Keenam cerita proyek berasal dari CV, termasuk monitoring infrastruktur dan penelitian arsitektur.
 - `#/atlas`: laboratorium backend dengan tujuh perangkat simulasi: perambatan perubahan domain, traffic request, reservoir event, query dan indeks, circuit breaker, rollout canary, serta proyeksi read model. Slider mengubah parameter model; animasi 3D, diagram hidup, dan metrik memperlihatkan dampaknya.
 - `#/station`: terminal email, GitHub, LinkedIn dan CV.
@@ -87,9 +87,9 @@ Semua bagian penjelasan dibaca dalam satu dokumen vertikal pada layar objek 3D. 
 
 ## Kontrol mobile
 
-Pada perangkat sentuh, HUD diringkas menjadi menu navigasi/pengaturan, joystick kiri, dan tombol aksi kontekstual kanan. Geser scene untuk melihat; sensitivitas kamera dapat diatur lewat Menu. Panel aktivitas Chronos dibuka melalui tombol ◈. Cerita memakai panel teks yang dapat digulir langsung. Menu juga menyediakan fullscreen jika browser mendukungnya; portrait, landscape, dan safe area layar ditangani tanpa mengubah isi destinasi.
+Pada perangkat sentuh, HUD diringkas menjadi menu navigasi/pengaturan, joystick kiri, dan tombol aksi kontekstual kanan. Geser scene untuk melihat; sensitivitas kamera dapat diatur lewat Menu. Peta Chronos dibuka melalui tombol Peta; dekati altar dan tekan tombol aksi untuk membuka puzzle. Cerita memakai panel teks yang dapat digulir langsung. Menu juga menyediakan fullscreen jika browser mendukungnya; portrait, landscape, dan safe area layar ditangani tanpa mengubah isi destinasi.
 
-Chronos menyediakan diagram langkah dan perbandingan dua konteks. Atlas menyediakan parameter, injeksi beban/gangguan, pause, langkah satu detik simulasi, reset per wahana, serta catatan engineer. Keduanya menyertakan ringkasan ilustrasi pada versi teks. Panel aktivitas mobile tetap dibuka melalui ◈; menu mobile tetap hanya berisi kembali ke orbit, sensitivitas kamera, dan fullscreen.
+Chronos menyediakan hutan ungu dengan 36 puzzle, kompas, dan checkpoint. Atlas menyediakan parameter, injeksi beban/gangguan, pause, langkah satu detik simulasi, reset per wahana, serta catatan engineer. Keduanya menyertakan ringkasan ilustrasi pada versi teks. Panel aktivitas Atlas mobile tetap dibuka melalui ◈; menu mobile tetap hanya berisi kembali ke orbit, sensitivitas kamera, dan fullscreen.
 
 
 ### Atlas Backend Observatory
@@ -159,3 +159,5 @@ Choose **VOYAGER / 01**, **SWIFT / 02** or **HALO / 03** in the flight deck. The
 **M** opens the orbital map and journal. A destination sets both horizontal bearing and target altitude; radar shows craft and monument positions. Approach within 30 m, slow below 10 m/s with little vertical motion, and press **F** or Scan to reveal a monument's story. The local browser journal tracks all six discoveries; entries can be reread from the map. Use **Set dock course** to navigate home. Within 9 m of the green docking ring, below 9 m/s with low vertical motion, **F** or Dock enters the satellite; normal motion includes an approach animation along the pier, while reduced motion enters directly. Flight supports a 290 m exploration radius, altitude limits, desert clearance, and collision substeps for structures and asteroids. Visitors can stay aboard without choosing a craft, use WASD/joystick to walk, and press **E** near the gallery terminals. The map also offers interior terminal navigation while on foot.
 
 All personal facts come from existing profile/CV content. The space landscape is an artistic metaphor. `npm run test:station` checks flight controls, vertical movement, collisions, docking constraints and layout. Browser QA covers scanning, docking, the walking reader, bilingual UI, touch buttons, journal progress and switching back to Nova. Real-device performance still depends on available WebGL hardware.
+
+Pengujian Chronos: `npm run test:chronos` memverifikasi solusi seluruh puzzle, pemulihan setelah kesalahan, timer lintasan, jembatan, terrain, dan validasi progres tersimpan. Progres tersimpan sebagai `chronos-forest-v1` di localStorage.

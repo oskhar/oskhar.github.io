@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:atlas": "node tests/atlas-simulation.test.mjs && node tests/atlas-extra.test.mjs",
+    "test:chronos": "node tests/chronos-forest.test.mjs",
     "test:nova": "node tests/nova-expedition.test.mjs",
     "test:station": "node tests/station-flight.test.mjs"
   },

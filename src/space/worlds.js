@@ -1,7 +1,7 @@
 import { SatelliteWorld } from './station.js';
 import { NovaWorld } from './nova.js';
 import { buildAtlas } from './atlas.js';
-import { buildChronos } from './chronos.js';
+import { ChronosWorld } from './chronos-world.js';
 import * as THREE from 'three';
 import { InteractiveLocation, block } from './interactions.js';
 import { CozyHome } from './home.js';
@@ -10,7 +10,7 @@ import { ring, materials } from './design.js';
 
 export class DestinationWorld extends InteractiveLocation {
  constructor(index,language,u){
-  super(index,language,u);if(index===0)return new CozyHome(language,u);if(index===2)return new NovaWorld(language,u);if(index===4)return new SatelliteWorld(language,u);
+  super(index,language,u);if(index===0)return new CozyHome(language,u);if(index===1)return new ChronosWorld(language,u);if(index===2)return new NovaWorld(language,u);if(index===4)return new SatelliteWorld(language,u);
   this.entry={position:[0,1.85,9.3],yaw:0,pitch:0};this.bounds={minX:-10.5,maxX:10.5,minZ:-9,maxZ:9.5};this.endZ=-9;
   const colors=[0xb8dfd0,0xd9bb7a,0x7fb9e0,0x77d8ef,0x9fbfdf],accent=colors[index];const metal=materials.metal,glowMat=new THREE.MeshBasicMaterial({color:accent});
   const b=(size,pos,mat=metal)=>block(this.group,size,pos,mat);const floor=new THREE.MeshStandardMaterial({color:0x132330,metalness:.35,roughness:.6});b([23,.4,23],[0,0,0],floor);
@@ -19,12 +19,8 @@ export class DestinationWorld extends InteractiveLocation {
   if(index!==1&&index!==3){ring(this.group,2.1,.218,accent,.012);ring(this.group,2.3,.218,accent,.004);}
   const fill=new THREE.DirectionalLight(0x9bc4e3,.7);fill.position.set(0,4,10);this.scene.add(fill);const back=new THREE.DirectionalLight(0xf2d4b3,.45);back.position.set(0,3,-10);this.scene.add(back);
   const cards=exhibitsFor(index,language);
-  if(index===1)this.archive(cards,accent);
   if(index===3)this.laboratory(cards);
   this.cards=this.interactables;this.setLanguage(language);
- }
- archive(cards,color){
-  buildChronos(this);
  }
  laboratory(cards){
   buildAtlas(this);

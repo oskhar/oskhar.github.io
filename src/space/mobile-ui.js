@@ -28,7 +28,7 @@ export function setupMobileUI(getUniverse){
  document.getElementById('return-orbit').hidden=mode!=='world';
  $('#mobile-place').textContent=mode==='world'?document.querySelector('#world-name').textContent:mode==='flight'?(id?'Penerbangan':'In flight'):'Orbit';
  $('#mobile-fullscreen').disabled=!document.fullscreenEnabled;$('#mobile-fullscreen').textContent=document.fullscreenElement?(id?'Keluar fullscreen':'Exit fullscreen'):(id?'⛶ Layar penuh':'⛶ Fullscreen');
- $('#mobile-detail').hidden=mode!=='world'||![1,3].includes(u?.world?.index)||u?.seated;
+ $('#mobile-detail').hidden=mode!=='world'||u?.world?.index!==3||u?.seated;
  shell.hidden=mode==='flight';if(u?.suspended&&open)close();
  },200);
  return {close,isOpen:()=>open};

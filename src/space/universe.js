@@ -193,7 +193,7 @@ export class Universe {
  }
  stand(){if(!this.seated)return;this.world.endReading();this.seated=false;this.flyTo(this.beforeSeat.position,this.beforeSeat.position.clone().add(new THREE.Vector3(0,0,-1).applyQuaternion(this.beforeSeat.quaternion)),{quaternion:this.beforeSeat.quaternion});}
  visitExhibit(index){
-  if(!this.world||this.seated)return;if(this.world.driving&&!this.world.exitVehicle())return;const item=this.world.interactables[index];if(!item)return;
+  if(!this.world||this.seated)return;if(this.world.index===1){this.world.selected=Math.max(0,Math.min(35,index));return;}if(this.world.driving&&!this.world.exitVehicle())return;const item=this.world.interactables[index];if(!item)return;
   const normal=item.screen.getWorldDirection(new THREE.Vector3());normal.y=0;if(normal.length()<.1)normal.set(0,0,1);normal.normalize();const position=item.anchor.position.clone().addScaledVector(normal,this.world.index===0?1.35:2.5);position.y=this.world.index===0?1.65:1.85;if(this.world.index===2)this.world.collisions(position);this.flyTo(position,item.anchor.position);
  }
  selectOrbit(index){
@@ -217,7 +217,7 @@ export class Universe {
   const updateOrbitControls=()=>{this.mobileOrbit=orbitMedia.matches;document.body.classList.toggle('orbit-touch',this.mobileOrbit);if(this.mode==='orbit'){this.pointer.set(0,0);this.pointerChanged=true;if(this.mobileOrbit)this.clampOrbitLook();else this.look={yaw:0,pitch:0};}};
   updateOrbitControls();orbitMedia.addEventListener('change',updateOrbitControls);
   this.resize=()=>{if(this.mode==='world'&&!this.seated)this.camera.fov=this.mobileOrbit?(innerWidth<innerHeight?75:65):58;this.camera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.renderer.setSize(innerWidth,innerHeight);this.cockpit?.resize();if(this.mode==='orbit'&&this.mobileOrbit){this.clampOrbitLook();this.pointerChanged=true;}};window.addEventListener('resize',this.resize);
-  window.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;if(['KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','KeyQ','KeyE'].includes(e.code)){if(this.mode==='world'&&!this.suspended&&!this.seated&&!this.world?.garageOpen&&!this.world?.mapOpen&&document.querySelector('#guide').hidden&&!document.body.classList.contains('mobile-menu-open')){e.preventDefault();this.keys.add(e.code);this.travel=null;}}});
+  window.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;if(['KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','ShiftRight','KeyQ','KeyE'].includes(e.code)){if(this.mode==='world'&&!this.suspended&&!this.seated&&!this.world?.garageOpen&&!this.world?.mapOpen&&document.querySelector('#guide').hidden&&!document.body.classList.contains('mobile-menu-open')){e.preventDefault();this.keys.add(e.code);this.travel=null;}}});
   window.addEventListener('keyup',e=>this.keys.delete(e.code));window.addEventListener('blur',()=>{this.keys.clear();this.stick={x:0,y:0};});
   document.addEventListener('pointerlockchange',()=>{this.active=document.pointerLockElement===this.canvas;this.keys.clear();document.body.classList.toggle('piloting',this.active);});
   document.addEventListener('mousemove',e=>{if(this.active&&!this.seated){this.look.yaw-=e.movementX*.0018;this.look.pitch=THREE.MathUtils.clamp(this.look.pitch-e.movementY*.0018,-1.45,1.45);this.travel=null;}});
@@ -248,8 +248,8 @@ export class Universe {
   else if(this.travel){const travel=this.travel,t=travel.duration?Math.min((performance.now()-travel.start)/travel.duration,1):1,s=t*t*(3-2*t);this.camera.position.lerpVectors(travel.from,travel.to,s);this.camera.quaternion.slerpQuaternions(travel.fromRotation,travel.toRotation,s);cameraDriven=true;const euler=new THREE.Euler().setFromQuaternion(this.camera.quaternion,'YXZ');this.look={yaw:euler.y,pitch:euler.x};if(t===1)this.travel=null;}
   else if(this.mode==='world'&&!this.suspended&&!this.seated&&!this.world?.garageOpen&&!this.world?.mapOpen&&document.querySelector('#guide').hidden&&!document.body.classList.contains('mobile-menu-open')){
    if(this.world.driving){this.world.drive(dt);cameraDriven=true;}else{
-   const dir=new THREE.Vector3((this.keys.has('KeyD')?1:0)-(this.keys.has('KeyA')?1:0)+this.stick.x,0,(this.keys.has('KeyS')?1:0)-(this.keys.has('KeyW')?1:0)+this.stick.y);if(dir.length()>1)dir.normalize();dir.applyAxisAngle(new THREE.Vector3(0,1,0),this.look.yaw);this.camera.position.addScaledVector(dir,dt*(this.world.index===0?(this.keys.has('ShiftLeft')?3.8:2.5):(this.keys.has('ShiftLeft')?5:3.2)));
-   this.camera.position.x=THREE.MathUtils.clamp(this.camera.position.x,this.world.bounds?.minX??-21,this.world.bounds?.maxX??21);this.camera.position.z=THREE.MathUtils.clamp(this.camera.position.z,this.world.endZ,this.world.bounds?.maxZ??14);this.camera.position.y=this.world.index===0?1.65:1.85;this.world.collisions(this.camera.position);}
+   const dir=new THREE.Vector3((this.keys.has('KeyD')?1:0)-(this.keys.has('KeyA')?1:0)+this.stick.x,0,(this.keys.has('KeyS')?1:0)-(this.keys.has('KeyW')?1:0)+this.stick.y);if(dir.length()>1)dir.normalize();dir.applyAxisAngle(new THREE.Vector3(0,1,0),this.look.yaw);if(this.world.walk){this.world.walk(dt,dir);}else{this.camera.position.addScaledVector(dir,dt*(this.world.index===0?(this.keys.has('ShiftLeft')?3.8:2.5):(this.keys.has('ShiftLeft')?5:3.2)));
+   this.camera.position.x=THREE.MathUtils.clamp(this.camera.position.x,this.world.bounds?.minX??-21,this.world.bounds?.maxX??21);this.camera.position.z=THREE.MathUtils.clamp(this.camera.position.z,this.world.endZ,this.world.bounds?.maxZ??14);this.camera.position.y=this.world.index===0?1.65:1.85;this.world.collisions(this.camera.position);}}
   }
 
   if(this.mode==='world'&&this.world?.driving)cameraDriven=true;
