@@ -1,10 +1,11 @@
+import { sectors } from './station-model.js';
 import { portfolioNotes } from './banking-notes.js';
 import { content, projects } from './content.js';
 
 export const routes = ['origin', 'chronos', 'nova', 'atlas', 'station'];
 export const worldNames = {
- en:['The Origin Home','The Chronos Archive','The Nova Hangar','The Atlas Laboratory','Orbital Mission Control'],
- id:['Rumah Origin','Arsip Chronos','Hanggar Nova','Laboratorium Atlas','Pusat Kendali Orbital'],
+ en:['The Origin Home','The Chronos Archive','The Nova Expedition','The Atlas Laboratory','Meridian Satellite'],
+ id:['Rumah Origin','Arsip Chronos','Ekspedisi Gurun Nova','Laboratorium Atlas','Satelit Meridian'],
 };
 export function exhibitsFor(index, language) {
  const c=content[language], id=language==='id';
@@ -20,7 +21,7 @@ export function exhibitsFor(index, language) {
   {title:id?'Pemantauan Infrastruktur Terpusat':'Centralized Infrastructure Monitoring',label:'05 / CV GHINA MULTIPRIMA',body:id?'Backend Engineer Intern pada April–Juli 2025, mengembangkan API dan layanan untuk pemantauan infrastruktur serta aplikasi terpusat. Teknologi mencakup Python, FastAPI, Express.js, dan Java. Pekerjaan mendukung pengumpulan serta pemrosesan metrik operasional, administrasi Linux, deployment Docker, pengujian, debugging, dan dokumentasi.':'Backend Engineer Intern from April to July 2025, building APIs and services for centralized infrastructure and application monitoring. Technologies included Python, FastAPI, Express.js and Java. The work supported operational metric collection and processing, Linux administration, Docker deployment, testing, debugging and documentation.',tags:['FastAPI','Monitoring','Linux']},
   {title:id?'Evaluasi Arsitektur Backend':'Backend Architecture Evaluation',label:'06 / UIN SYARIF HIDAYATULLAH JAKARTA',body:id?'Penelitian skripsi membandingkan monolit dengan arsitektur hybrid yang menggabungkan microservices, CQRS, dan event sourcing pada aplikasi intensif data. Evaluasi mempertimbangkan performa, karakteristik arsitektur, serta pengalaman pengembang. Fokusnya memahami trade-off pola arsitektur dengan kebutuhan aplikasi dan proses pengembangan.':'Thesis research comparing a monolithic baseline with a hybrid architecture combining microservices, CQRS and event sourcing in data-intensive applications. The evaluation considered performance, architectural characteristics and developer experience, focusing on trade-offs between architecture patterns, application requirements and the development process.',tags:['Research','CQRS','Event sourcing']}];
  if(index===3)return portfolioNotes(3,language);
- return [
+ return [...sectors.map((s,i)=>({title:s.name[language],label:`0${i+1} / PERSONAL CONSTELLATION`,body:s.body[language]+'\n\n'+s.meaning[language],tags:[s.biome[language]]})),
   {title:id?'Mari berkolaborasi.':'Let’s build together.',label:'01 / COMMUNICATION',body:c.contactText+'\n\nmuhamadoskharm@gmail.com',tags:[id?'E untuk mengirim email':'E to send an email'],url:'mailto:muhamadoskharm@gmail.com'},
   {title:'GitHub / oskhar',label:'02 / SOURCE CODE',body:id?'Jelajahi repository dan karya pengembangan saya di GitHub.':'Explore my repositories and development work on GitHub.',tags:[id?'E untuk membuka GitHub':'E to open GitHub'],url:'https://github.com/oskhar'},
   {title:'LinkedIn / oskhar',label:'03 / PROFESSIONAL NETWORK',body:id?'Terhubung untuk peluang profesional dan kolaborasi.':'Connect for professional opportunities and collaboration.',tags:[id?'E untuk membuka LinkedIn':'E to open LinkedIn'],url:'https://linkedin.com/in/oskhar'},

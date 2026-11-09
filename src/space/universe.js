@@ -109,7 +109,7 @@ export class Universe {
   return this.flightTravel;
  }
  beginReturn(){
-  const world=this.world;if(!world)return false;addLandingBerth(world);world.endReading();this.release();this.travel=null;this.seated=false;this.keys.clear();this.stick={x:0,y:0};this.suspended=true;this.mode='flight';
+  const world=this.world;if(!world)return false;world.exitVehicle?.(true);addLandingBerth(world);world.endReading();this.release();this.travel=null;this.seated=false;this.keys.clear();this.stick={x:0,y:0};this.suspended=true;this.mode='flight';
   for(const item of world.interactables){item.halo.visible=false;item.marker.visible=false;item.cue.visible=false;}
   const berth=world.berth,z=berth.z,seat=berth.position.clone(),target=new THREE.Vector3(...destinations[world.index].position),endpoint=new THREE.Vector3(0,2,25.5),radial=endpoint.clone().sub(target).normalize();
   const exit=world.index===0?new THREE.Vector3(0,1.65,5.95):new THREE.Vector3(0,1.85,11.3);
@@ -182,19 +182,19 @@ export class Universe {
  }
  enterWorld(i){
   if(this.flightTravel)this.endFlight();
-  this.world?.endReading();this.focusedExhibit=null;this.seated=false;this.release();this.travel=null;this.keys.clear();this.stick={x:0,y:0};this.mode='world';this.landedAt=i;
+  this.world?.exitVehicle?.(true);this.world?.endReading();this.focusedExhibit=null;this.seated=false;this.release();this.travel=null;this.keys.clear();this.stick={x:0,y:0};this.mode='world';this.landedAt=i;
   if(!this.worlds.has(i))this.worlds.set(i,new DestinationWorld(i,this.language,this));
   this.world=this.worlds.get(i);addLandingBerth(this.world);this.scene=this.world.scene;this.camera.position.set(0,i===0?1.85:2.1,13);this.look={yaw:0,pitch:0};if(this.world.entry){this.camera.position.fromArray(this.world.entry.position);this.look={yaw:this.world.entry.yaw,pitch:this.world.entry.pitch};}if(this.mobileOrbit){this.camera.fov=innerWidth<innerHeight?75:65;this.camera.updateProjectionMatrix();}this.currentTarget=-1;this.onMode('world',i);
  }
- home(){if(this.flightTravel)this.endFlight({reset:true});this.world?.endReading();this.focusedExhibit=null;this.seated=false;this.release();this.travel=null;this.stick={x:0,y:0};this.mode='orbit';this.world=null;this.scene=this.orbitScene;this.camera.position.set(0,2,24);this.look={yaw:0,pitch:0};this.currentTarget=-1;this.onMode('orbit');}
+ home(){this.world?.exitVehicle?.(true);if(this.flightTravel)this.endFlight({reset:true});this.world?.endReading();this.focusedExhibit=null;this.seated=false;this.release();this.travel=null;this.stick={x:0,y:0};this.mode='orbit';this.world=null;this.scene=this.orbitScene;this.camera.position.set(0,2,24);this.look={yaw:0,pitch:0};this.currentTarget=-1;this.onMode('orbit');}
  sit(item=this.world?.interactables.find(o=>o.kind==='seat')){
   if(!item||this.mode!=='world')return;this.release();this.seated=true;this.stick={x:0,y:0};this.beforeSeat={position:this.camera.position.clone(),look:{...this.look},quaternion:this.camera.quaternion.clone()};this.world.beginReading(item);this.scene.updateMatrixWorld(true);
   const center=item.screen.getWorldPosition(new THREE.Vector3()),normal=new THREE.Vector3(0,0,1).applyQuaternion(item.screen.getWorldQuaternion(new THREE.Quaternion()));const distance=Math.max(item.screenWidth*1.04,item.screenWidth/(2*Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2))*this.camera.aspect)*1.12);this.flyTo(center.clone().addScaledVector(normal,distance),center,{quaternion:item.screen.getWorldQuaternion(new THREE.Quaternion())});
  }
  stand(){if(!this.seated)return;this.world.endReading();this.seated=false;this.flyTo(this.beforeSeat.position,this.beforeSeat.position.clone().add(new THREE.Vector3(0,0,-1).applyQuaternion(this.beforeSeat.quaternion)),{quaternion:this.beforeSeat.quaternion});}
  visitExhibit(index){
-  if(!this.world||this.seated)return;const item=this.world.interactables[index];if(!item)return;
-  const normal=item.screen.getWorldDirection(new THREE.Vector3());normal.y=0;if(normal.length()<.1)normal.set(0,0,1);normal.normalize();const position=item.anchor.position.clone().addScaledVector(normal,this.world.index===0?1.35:2.5);position.y=this.world.index===0?1.65:1.85;this.flyTo(position,item.anchor.position);
+  if(!this.world||this.seated)return;if(this.world.driving&&!this.world.exitVehicle())return;const item=this.world.interactables[index];if(!item)return;
+  const normal=item.screen.getWorldDirection(new THREE.Vector3());normal.y=0;if(normal.length()<.1)normal.set(0,0,1);normal.normalize();const position=item.anchor.position.clone().addScaledVector(normal,this.world.index===0?1.35:2.5);position.y=this.world.index===0?1.65:1.85;if(this.world.index===2)this.world.collisions(position);this.flyTo(position,item.anchor.position);
  }
  selectOrbit(index){
   if(this.mode!=='orbit')return;
@@ -217,7 +217,7 @@ export class Universe {
   const updateOrbitControls=()=>{this.mobileOrbit=orbitMedia.matches;document.body.classList.toggle('orbit-touch',this.mobileOrbit);if(this.mode==='orbit'){this.pointer.set(0,0);this.pointerChanged=true;if(this.mobileOrbit)this.clampOrbitLook();else this.look={yaw:0,pitch:0};}};
   updateOrbitControls();orbitMedia.addEventListener('change',updateOrbitControls);
   this.resize=()=>{if(this.mode==='world'&&!this.seated)this.camera.fov=this.mobileOrbit?(innerWidth<innerHeight?75:65):58;this.camera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.renderer.setSize(innerWidth,innerHeight);this.cockpit?.resize();if(this.mode==='orbit'&&this.mobileOrbit){this.clampOrbitLook();this.pointerChanged=true;}};window.addEventListener('resize',this.resize);
-  window.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;if(['KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','KeyQ','KeyE'].includes(e.code)){if(this.mode==='world'&&!this.suspended&&!this.seated&&document.querySelector('#guide').hidden&&!document.body.classList.contains('mobile-menu-open')){e.preventDefault();this.keys.add(e.code);this.travel=null;}}});
+  window.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;if(['KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','KeyQ','KeyE'].includes(e.code)){if(this.mode==='world'&&!this.suspended&&!this.seated&&!this.world?.garageOpen&&!this.world?.mapOpen&&document.querySelector('#guide').hidden&&!document.body.classList.contains('mobile-menu-open')){e.preventDefault();this.keys.add(e.code);this.travel=null;}}});
   window.addEventListener('keyup',e=>this.keys.delete(e.code));window.addEventListener('blur',()=>{this.keys.clear();this.stick={x:0,y:0};});
   document.addEventListener('pointerlockchange',()=>{this.active=document.pointerLockElement===this.canvas;this.keys.clear();document.body.classList.toggle('piloting',this.active);});
   document.addEventListener('mousemove',e=>{if(this.active&&!this.seated){this.look.yaw-=e.movementX*.0018;this.look.pitch=THREE.MathUtils.clamp(this.look.pitch-e.movementY*.0018,-1.45,1.45);this.travel=null;}});
@@ -244,12 +244,15 @@ export class Universe {
  animate(){
   this.frame=requestAnimationFrame(()=>this.animate());const dt=Math.min(this.clock.getDelta(),.05),time=this.clock.elapsedTime;
   let cameraDriven=false;
-  if(this.travel){const travel=this.travel,t=travel.duration?Math.min((performance.now()-travel.start)/travel.duration,1):1,s=t*t*(3-2*t);this.camera.position.lerpVectors(travel.from,travel.to,s);this.camera.quaternion.slerpQuaternions(travel.fromRotation,travel.toRotation,s);cameraDriven=true;const euler=new THREE.Euler().setFromQuaternion(this.camera.quaternion,'YXZ');this.look={yaw:euler.y,pitch:euler.x};if(t===1)this.travel=null;}
-  else if(this.mode==='world'&&!this.suspended&&!this.seated&&document.querySelector('#guide').hidden&&!document.body.classList.contains('mobile-menu-open')){
+  if(this.mode==='world'&&this.world?.docking){this.world.updateTransition(dt);cameraDriven=true;}
+  else if(this.travel){const travel=this.travel,t=travel.duration?Math.min((performance.now()-travel.start)/travel.duration,1):1,s=t*t*(3-2*t);this.camera.position.lerpVectors(travel.from,travel.to,s);this.camera.quaternion.slerpQuaternions(travel.fromRotation,travel.toRotation,s);cameraDriven=true;const euler=new THREE.Euler().setFromQuaternion(this.camera.quaternion,'YXZ');this.look={yaw:euler.y,pitch:euler.x};if(t===1)this.travel=null;}
+  else if(this.mode==='world'&&!this.suspended&&!this.seated&&!this.world?.garageOpen&&!this.world?.mapOpen&&document.querySelector('#guide').hidden&&!document.body.classList.contains('mobile-menu-open')){
+   if(this.world.driving){this.world.drive(dt);cameraDriven=true;}else{
    const dir=new THREE.Vector3((this.keys.has('KeyD')?1:0)-(this.keys.has('KeyA')?1:0)+this.stick.x,0,(this.keys.has('KeyS')?1:0)-(this.keys.has('KeyW')?1:0)+this.stick.y);if(dir.length()>1)dir.normalize();dir.applyAxisAngle(new THREE.Vector3(0,1,0),this.look.yaw);this.camera.position.addScaledVector(dir,dt*(this.world.index===0?(this.keys.has('ShiftLeft')?3.8:2.5):(this.keys.has('ShiftLeft')?5:3.2)));
-   this.camera.position.x=THREE.MathUtils.clamp(this.camera.position.x,-21,21);this.camera.position.z=THREE.MathUtils.clamp(this.camera.position.z,this.world.endZ,this.world.bounds?.maxZ??14);this.camera.position.y=this.world.index===0?1.65:1.85;this.world.collisions(this.camera.position);
+   this.camera.position.x=THREE.MathUtils.clamp(this.camera.position.x,this.world.bounds?.minX??-21,this.world.bounds?.maxX??21);this.camera.position.z=THREE.MathUtils.clamp(this.camera.position.z,this.world.endZ,this.world.bounds?.maxZ??14);this.camera.position.y=this.world.index===0?1.65:1.85;this.world.collisions(this.camera.position);}
   }
 
+  if(this.mode==='world'&&this.world?.driving)cameraDriven=true;
   if(this.mode!=='flight'&&!this.seated&&!cameraDriven)this.camera.rotation.set(this.look.pitch,this.look.yaw,0,'YXZ');
   if(this.motion&&this.mode==='orbit'){
    this.homeTime+=dt;this.planets.forEach((planet,i)=>{planet.rotation.y+=dt*[.18,.12,.23,.16][i];planet.rotation.z=[.17,-.25,.11,.36][i]+Math.sin(this.homeTime*.18+i)*.025;});
@@ -266,12 +269,12 @@ export class Universe {
   this.homeOrbit.update(dt,this.mode==='orbit',this.currentTarget,this.motion);
   if(this.mode==='world'){
    let item=null;
-   if(!this.seated){this.raycaster.setFromCamera(new THREE.Vector2(0,0),this.camera);const hit=this.raycaster.intersectObjects(this.world.interactables.map(i=>i.target))[0];if(hit&&hit.distance<8&&this.camera.position.distanceTo(hit.object.userData.item.anchor.position)<=hit.object.userData.item.activationDistance){
+   if(!this.seated&&!this.world.driving){this.raycaster.setFromCamera(new THREE.Vector2(0,0),this.camera);const hit=this.raycaster.intersectObjects(this.world.interactables.map(i=>i.target))[0];if(hit&&hit.distance<8&&this.camera.position.distanceTo(hit.object.userData.item.anchor.position)<=hit.object.userData.item.activationDistance){
      const blocking=this.raycaster.intersectObjects(this.world.group.children,true).find(h=>{if(!h.object.isMesh)return false;let node=h.object;while(node){if(!node.visible)return false;node=node.parent;}const materials=Array.isArray(h.object.material)?h.object.material:[h.object.material];return materials.some(m=>m.visible!==false&&m.colorWrite!==false&&m.opacity>.25);});
      if(!blocking||blocking.distance>=hit.distance-.08)item=hit.object.userData.item;
     }
     if(!item){const forward=this.camera.getWorldDirection(new THREE.Vector3());const nearest=this.world.interactables.map(i=>{const delta=i.anchor.position.clone().sub(this.camera.position);return {item:i,distance:delta.length(),alignment:delta.normalize().dot(forward)};}).filter(i=>i.alignment>.65&&i.distance<=i.item.activationDistance).sort((a,b)=>a.distance-b.distance)[0];if(nearest?.distance<2.5)item=nearest.item;}}
-   if(!this.seated){const boarding=this.world.berth?.boarding;if(boarding&&this.camera.position.distanceTo(boarding.anchor.position)<=boarding.activationDistance)item=boarding;}
+   if(!this.seated&&!this.world.driving){const boarding=this.world.berth?.boarding;if(boarding&&this.camera.position.distanceTo(boarding.anchor.position)<=boarding.activationDistance)item=boarding;}
    const identifier=item?.id||null;if(identifier!==this.focusedExhibit){this.focusedExhibit=identifier;this.onExhibit?.(item?{item}:null);}
    this.world.update(this.motion?dt:0,this.motion?time:0,this.camera,this.focusedExhibit);
   }

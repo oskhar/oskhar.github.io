@@ -1,3 +1,5 @@
+import { setupStationUI } from './station-ui.js';
+import { setupNovaUI } from './nova-ui.js';
 import { chronosExamples } from './chronos.js';
 import { atlasExamples } from './atlas.js';
 import { setupMobileUI } from './mobile-ui.js';
@@ -60,7 +62,7 @@ function updateInteraction(exhibit){
  document.querySelector('#interact').textContent=item?.kind==='experiment'?(language==='id'?'Bereksperimen':'Experiment'):item?.kind==='boarding'?(language==='id'?'E · Naik pesawat':'E · Board spacecraft'):item?.kind==='seat'?ui().sit:item?.kind==='link'?ui().open+' ↗':item?.kind==='light'?(language==='id'?'Ubah pencahayaan':'Switch the lighting'):(language==='id'?'E · Jelajahi cerita':'E · Explore the story');
 }
 function interact(){
- const item=focused?.item;if(!item||universe?.seated||universe?.suspended)return;
+ const item=focused?.item;if(!item||universe?.seated||universe?.suspended||universe?.world?.garageOpen||universe?.world?.mapOpen||universe?.world?.driving)return;
  if(item.kind==='experiment'){universe.world.lab.selected=item.labIndex;universe.world.lab.controlsOpen=true;universe.release();window.dispatchEvent(new Event('atlas-experiment'));return;}
  if(item.kind==='boarding'){if(universe.camera.position.distanceTo(item.anchor.position)<=item.activationDistance)returnToOrbit();return;}
  if(item.kind==='link'){item.activated=true;universe.release();window.open(item.url,'_blank','noopener,noreferrer');}
@@ -126,3 +128,5 @@ try{universe=new Universe(document.querySelector('#universe'),{onNear:updateAim,
 window.addEventListener('chronos-reading',()=>{updateReaderUI();updateWorld();});
 
 setupMobileUI(()=>universe);
+setupNovaUI(()=>universe);
+setupStationUI(()=>universe);

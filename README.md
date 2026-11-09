@@ -130,3 +130,32 @@ Kirim request, ubah slider, dan gunakan tombol ON/OFF untuk membandingkan hasil.
 menyimpan 60 sampel saat panel terbuka, dengan skala maksimum per metrik.
 Penjelasan tersedia di **Cara kerja**. Semua angka berasal dari model edukasi
 lokal. Jalankan `npm run test:atlas` untuk memeriksa perilaku simulasi.
+
+### Nova — desert project expedition
+
+Nova (`#/nova`) is a continuous desert world with a 380 m playable diameter, a basecamp garage, three driveable vehicles, and six districts derived from the existing CV project content:
+
+| District | Project | Landscape interpretation |
+| --- | --- | --- |
+| Finance Citadel | GMF Enterprise Finance Suite | Four connected CAPEX, OPEX, G-SMART and OCX 2.0 towers |
+| Sentinel Canyon | Intelligent Monitoring | Observation towers, AI control building and a moving bus corridor |
+| Muvie Exchange | Multi-branch Commerce | Three market branches, inventory crates and a central exchange |
+| Priuk Oasis | Community Health Platform | Clinic, water, nutrition gardens and growth-chart pillars |
+| Pulse Station | Centralized Infrastructure Monitoring | Server racks, telemetry dish and solar arrays in a salt basin |
+| Architecture Valley | Backend Architecture Evaluation | A monolith, microservice cluster, separate read/write paths and an event ring |
+
+Choose DUNE / 06 (balanced rover), SCOUT / 02 (faster buggy), or MIRAGE / 01 (gliding hovercraft). Drive with **WASD**, use **Shift** for boost and **Space** to brake. **F** disembarks or boards the selected vehicle when nearby. Drag/mouse-look rotates the chase camera; the **⌖** button recenters it. On touch screens, use the joystick and hold the **BOOST / BRAKE** buttons. **M** opens the map and journal; choosing a district sets the compass target. Follow the colored trail markers, park near a terminal, and press **E** to read its project story. Reading all six terminals completes the journal, saved locally in this browser. The garage/restart control returns the selected vehicle to basecamp. Escape closes the map or garage. Existing orbit return controls remain available.
+
+The districts are conceptual representations of documented professional work, not replicas of private systems or claims of production metrics. UI, terminal stories and map descriptions support Indonesian and English. Reduced motion suppresses ambient movement and camera smoothing without disabling driving. Geometry is procedural, with instanced desert rocks and no additional downloaded assets.
+
+Run `npm run test:nova` for deterministic terrain, route, district layout, vehicle handling, braking, boundary and thin-wall collision checks. `npm run test:atlas` covers the existing Atlas simulations; `npm run build` produces the production bundle.
+
+### Meridian — satellite and personal constellation
+
+The Station (`#/station`) now combines a walkable satellite with an orbital desert expedition. Meridian has a windowed gallery, solar wings, a communications room, a docking ring, and a pier leading to the visitor shuttle. Six exterior monuments interpret documented aspects of Oskhar's profile: West Jakarta origins, education and research, backend engineering, technical ownership, community, and future collaboration. Each has a different architectural form and dust/crystal palette; the same factual stories can be read at the six interior gallery terminals. Email, GitHub, LinkedIn and source CV terminals remain available in the communication room.
+
+Choose **VOYAGER / 01**, **SWIFT / 02** or **HALO / 03** in the flight deck. The craft have different acceleration, top speed, turning and vertical response. **W/S** provide thrust/reverse; **A/D** turn while hovering or moving; **Q/E** ascend/descend; **Shift** boosts; **Space** brakes. Mouse/drag independently rotates the chase camera, and **⌖** recenters it. Visible **Ascend / Q** and **Descend / E** buttons work on desktop and touch screens: press and hold to change altitude, then release to stop the vertical thrust. The buttons also support holding Enter/Space when focused. Touch controls additionally provide a joystick, boost and braking. Choosing a craft starts a fresh flight at the dock.
+
+**M** opens the orbital map and journal. A destination sets both horizontal bearing and target altitude; radar shows craft and monument positions. Approach within 30 m, slow below 10 m/s with little vertical motion, and press **F** or Scan to reveal a monument's story. The local browser journal tracks all six discoveries; entries can be reread from the map. Use **Set dock course** to navigate home. Within 9 m of the green docking ring, below 9 m/s with low vertical motion, **F** or Dock enters the satellite; normal motion includes an approach animation along the pier, while reduced motion enters directly. Flight supports a 290 m exploration radius, altitude limits, desert clearance, and collision substeps for structures and asteroids. Visitors can stay aboard without choosing a craft, use WASD/joystick to walk, and press **E** near the gallery terminals. The map also offers interior terminal navigation while on foot.
+
+All personal facts come from existing profile/CV content. The space landscape is an artistic metaphor. `npm run test:station` checks flight controls, vertical movement, collisions, docking constraints and layout. Browser QA covers scanning, docking, the walking reader, bilingual UI, touch buttons, journal progress and switching back to Nova. Real-device performance still depends on available WebGL hardware.
