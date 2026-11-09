@@ -1,4 +1,5 @@
 import { setupStationUI } from './station-ui.js';
+import { setupHomeProfile } from './home-profile.js';
 import { setupNovaUI } from './nova-ui.js';
 import { chronosExamples } from './chronos.js';
 import { atlasExamples } from './atlas.js';
@@ -131,3 +132,4 @@ window.addEventListener('chronos-reading',()=>{updateReaderUI();updateWorld();})
 setupMobileUI(()=>universe);
 setupNovaUI(()=>universe);
 setupStationUI(()=>universe);
+setupHomeProfile(()=>universe,go);

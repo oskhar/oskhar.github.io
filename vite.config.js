@@ -7,6 +7,7 @@ import { dirname, resolve } from 'node:path';
 const publicAssets = [
     'myLogo.ico',
     'cv.md',
+    'cv.pdf',
     ...['sofa', 'coffee-table', 'dining-table', 'chair', 'fridge', 'oven', 'sink', 'cabinet', 'kettle', 'mug', 'plant', 'clock', 'curtains', 'bed', 'toilet', 'bath-sink', 'shower', 'globe', 'books']
         .map(name => `lib/home/${name}.fbx`),
     'lib/space/spacebits_texture.png',
