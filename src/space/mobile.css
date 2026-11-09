@@ -51,3 +51,55 @@
  .mobile-game #space-loading.flight-mode .pilot-navigation{transform:none;width:auto;text-align:center}
  .mobile-game #space-loading #pilot-phase{white-space:normal;line-height:1.6}
 }
+
+/* Keep exploration clear: secondary actions live in Menu, controls stay at the edges. */
+@media(max-width:760px),(pointer:coarse){
+ .mobile-game #mobile-world-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+ .mobile-game #mobile-world-actions[hidden]{display:none}
+ .mobile-game #mobile-world-actions button{line-height:1.4}
+ .mobile-game .nova-toolbar,.mobile-game .sat-toolbar,.mobile-game #nova-controls,.mobile-game #sat-controls,.mobile-game .sat-walk-actions{display:none!important}
+ .mobile-game .nova-route,.mobile-game .sat-compass{left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));top:calc(var(--mobile-top) + 52px);bottom:auto;max-width:none;padding:5px 9px;gap:3px;border:0;border-radius:8px;background:#0c1d2db3;pointer-events:none}
+ .mobile-game .nova-route strong,.mobile-game .sat-compass strong{font-size:12px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .mobile-game .nova-route>span:last-child,.mobile-game .sat-compass>span:last-of-type{font-size:9px}
+ .mobile-game .nova-route .nova-kicker,.mobile-game .sat-compass .sat-kicker,.mobile-game #sat-radar{display:none}
+ .mobile-game #nova-bearing{font-size:14px}
+ .mobile-game .nova-telemetry,.mobile-game .sat-instruments{right:max(12px,env(safe-area-inset-right));bottom:calc(var(--mobile-bottom) + 2px);width:176px;max-width:calc(100vw - 152px);padding:8px;box-sizing:border-box;border-radius:12px;background:#102133c9}
+ .mobile-game .nova-telemetry{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+ .mobile-game .nova-telemetry>strong{font-size:20px}
+ .mobile-game .nova-telemetry>div{font-size:8px;gap:2px}
+ .mobile-game #nova-vehicle{display:none}
+ .mobile-game .nova-telemetry>.nova-touch-drive{grid-column:1/-1;gap:6px;width:auto}
+ .mobile-game .nova-telemetry button,.mobile-game .sat-instruments button{min-height:44px;padding:7px 5px;font-size:10px}
+ .mobile-game .nova-telemetry [data-action="view"]{display:none}
+ .mobile-game .nova-telemetry [data-action="exit"]{grid-column:1/-1;min-height:44px}
+ .mobile-game #nova-foot{right:max(18px,env(safe-area-inset-right));bottom:calc(var(--mobile-bottom) + 22px)}
+ .mobile-game #nova-foot button{min-height:48px}
+ .mobile-game .sat-speed{gap:6px;margin:0 0 6px}
+ .mobile-game .sat-speed>strong{font-size:20px}
+ .mobile-game .sat-speed>span{font-size:8px}
+ .mobile-game #sat-ship,.mobile-game .sat-flight-buttons{display:none}
+ .mobile-game .sat-altitude-controls{margin-top:0;gap:6px}
+ .mobile-game .sat-altitude-controls button{font-size:10px}
+ .mobile-game .sat-touch{margin-top:6px;gap:6px}
+ .mobile-game #sat-proximity{top:auto;left:auto;right:max(12px,env(safe-area-inset-right));bottom:calc(var(--mobile-bottom) + 146px);transform:none;width:176px;max-width:calc(100vw - 152px);padding:8px;gap:5px;box-sizing:border-box;background:#102133dc;box-shadow:none;border-radius:10px}
+ .mobile-game #sat-proximity strong{font-size:11px;line-height:1.35}
+ .mobile-game #sat-proximity>span{font-size:10px;line-height:1.4}
+ .mobile-game #sat-proximity button{width:100%;font-size:11px;min-height:44px;padding:8px}
+ .mobile-game.sat-active #world-interaction{bottom:calc(var(--mobile-bottom) + 22px)}
+ .mobile-game #chronos-forest-ui .forest-hud{left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));top:calc(var(--mobile-top) + 52px);bottom:auto;width:auto;padding:6px 10px;gap:4px;border:0;border-radius:8px;background:#291734b3;box-shadow:none;backdrop-filter:none;pointer-events:none}
+ .mobile-game .forest-hud small,.mobile-game .forest-hud .forest-heading,.mobile-game .forest-hud progress,.mobile-game .forest-hud .forest-tools{display:none}
+ .mobile-game .forest-progress,.mobile-game .forest-bearing{font-size:10px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .mobile-game .forest-touch{right:max(18px,env(safe-area-inset-right));bottom:calc(var(--mobile-bottom) + 14px);gap:8px}
+ .mobile-game .forest-touch button{width:60px;height:48px;padding:6px;font-size:10px}
+ .mobile-game.chronos-forest-active #world-interaction{bottom:calc(var(--mobile-bottom) + 78px)}
+ .mobile-game #nova-arrival,.mobile-game #sat-toast,.mobile-game .forest-toast{top:calc(var(--mobile-top) + 108px);font-size:11px;padding:8px 12px;line-height:1.4;max-width:calc(100vw - 32px);box-sizing:border-box}
+ .mobile-game.mobile-menu-open #nova-ui,.mobile-game.mobile-menu-open #sat-ui,.mobile-game.mobile-menu-open #chronos-forest-ui{visibility:hidden}
+}
+@media(max-height:500px) and (orientation:landscape){
+ .mobile-game .nova-route,.mobile-game .sat-compass,.mobile-game #chronos-forest-ui .forest-hud{right:auto;max-width:calc(100vw - 230px)}
+ .mobile-game .nova-route>span:last-child,.mobile-game .sat-compass>span:last-of-type,.mobile-game .forest-progress{display:none}
+ .mobile-game .nova-telemetry{grid-template-columns:1fr 1fr;gap:4px}
+ .mobile-game .nova-telemetry>strong,.mobile-game .nova-telemetry>div:not(.nova-touch-drive),.mobile-game .sat-speed{display:none}
+ .mobile-game #sat-proximity{bottom:calc(var(--mobile-bottom) + 112px)}
+ .mobile-game #sat-proximity>span{display:none}
+}
