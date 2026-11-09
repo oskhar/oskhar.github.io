@@ -37,8 +37,8 @@ body:not(.inside-world):not(.mobile-game) #app .target-readout{top:128px;bottom:
 .profile-facts{display:grid;grid-template-columns:repeat(3,1fr);margin:30px 0;border-top:1px solid #9bc2d02b;border-bottom:1px solid #9bc2d02b;padding:20px 0;gap:15px}
 .profile-facts strong,.profile-facts small{display:block}.profile-facts strong{font-size:23px;font-weight:400;color:#d9e9ed}.profile-facts small{font:8px monospace;letter-spacing:.08em;color:#8aabb9;margin-top:7px}
 #profile-about,#profile-current{font-size:13px;line-height:1.95;color:#b9ced8;max-width:650px}
-.profile-education{display:flex;align-items:center;gap:16px;padding:18px 0;margin-top:20px;border-top:1px solid #9bc2d02b}.profile-education>span{font-size:26px;color:#d4b78e}.profile-education strong,.profile-education div>span{display:block;font-size:11px;line-height:1.8;font-weight:400}.profile-education div>span{color:#92adba}
-.profile-footer{display:flex;align-items:center;gap:12px;margin-top:20px}.profile-footer button,.profile-footer a{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:48px;padding:0 20px;font-family:inherit;font-size:11px;border:1px solid #b4d2db55;border-radius:3px;text-decoration:none;color:#bfdde5;background:#14313f;cursor:pointer}.profile-footer button{background:#e1c18d;color:#152331;border-color:#f0d6ac}
+.profile-education{display:flex;align-items:center;gap:16px;padding:18px 0;margin-top:20px;border-top:1px solid #9bc2d02b}.profile-education>span{font-size:26px;color:#d4b78e}.profile-education strong{display:block;font-size:11px;line-height:1.8;font-weight:400}
+.profile-footer{display:flex;align-items:center;gap:12px;margin-top:20px}.profile-footer a{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:48px;padding:0 20px;font-family:inherit;font-size:11px;border:1px solid #b4d2db55;border-radius:3px;text-decoration:none;color:#bfdde5;background:#14313f;cursor:pointer}.profile-footer a{background:#e1c18d;color:#152331;border-color:#f0d6ac}
 #profile-dialog :is(button,a):focus-visible{outline:2px solid #fff1ce;outline-offset:4px}
 .profile-orbit{position:absolute;right:-80px;top:70px;width:340px;height:340px;border:1px solid #9fc9df11;border-radius:50%;box-shadow:0 0 0 36px #9fc9df05,0 0 0 72px #9fc9df04;pointer-events:none;z-index:0}
 @keyframes transmission-arrive{from{opacity:0;transform:translateY(12px);filter:blur(5px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
@@ -59,7 +59,7 @@ body:not(.inside-world):not(.mobile-game) #app .target-readout{top:128px;bottom:
  #profile-title{font-size:clamp(29px,8vw,48px)}.profile-role{font-size:8px;letter-spacing:.06em}
  .profile-facts{gap:8px;margin:23px 0;padding:16px 0}.profile-facts strong{font-size:18px}.profile-facts small{font-size:6px}
  #profile-about,#profile-current{font-size:12px;line-height:1.85}
- .profile-footer{flex-wrap:wrap;gap:8px}.profile-footer button,.profile-footer a{flex:1;padding:0 12px;font-size:11px;white-space:nowrap}
+ .profile-footer{flex-wrap:wrap;gap:8px}.profile-footer a{flex:1;padding:0 12px;font-size:11px;white-space:nowrap}
 }
 @media(max-height:500px) and (orientation:landscape){#home-profile{top:65px;width:330px;right:auto}#home-profile-title{display:none}.transmission-actions>button,.transmission-actions>a{min-height:48px}.transmission-actions small{display:none}}
 @media(prefers-reduced-motion:reduce){#home-profile,#profile-dialog[open],.transmission-actions>button:before,.transmission-actions>a:before{animation:none}.transmission-actions>button,.transmission-actions>a{transition:none}}

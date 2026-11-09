@@ -132,4 +132,4 @@ window.addEventListener('chronos-reading',()=>{updateReaderUI();updateWorld();})
 setupMobileUI(()=>universe);
 setupNovaUI(()=>universe);
 setupStationUI(()=>universe);
-setupHomeProfile(()=>universe,go);
+setupHomeProfile(()=>universe);
