@@ -7,3 +7,10 @@
 
 .sat-altitude-controls{display:flex;gap:8px;margin-top:12px}.sat-altitude-controls button{flex:1;min-height:44px;padding:11px 16px;border:1px solid #9bd9d277;border-radius:5px;background:#19394a;color:#d7f2ed;touch-action:none;user-select:none;-webkit-user-select:none;font-size:12px}.sat-altitude-controls button.pressed,.sat-touch button.pressed{background:#9cd5ce;color:#102030;border-color:#c3eee7;box-shadow:0 0 15px #8bcac633}.sat-altitude-controls button:hover{border-color:#c3eee7}
 @media(max-width:760px),(pointer:coarse){.sat-altitude-controls{gap:6px;margin-top:9px}.sat-altitude-controls button{padding:10px 7px;font-size:11px}.sat-touch{margin-top:6px}}
+
+/* Keep nearby actions above flight instruments and walking controls. */
+#sat-proximity{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:min(360px,calc(100% - 32px));display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px;text-align:center;background:#102133f5;border:1px solid #a7e3de;border-radius:12px;box-shadow:0 8px 32px #0008;pointer-events:auto}
+#sat-proximity strong{font-size:16px}#sat-proximity>span{font-size:12px;line-height:1.5;color:#c2dce2}#sat-proximity button{min-height:48px;padding:12px 20px;background:#a7e3de;color:#102030;border:1px solid #d7f2ed;border-radius:8px;font-weight:700}
+.sat-active #world-interaction{z-index:34}.sat-active #world-interaction:not([hidden]){border-color:#a7e3de;background:#102133f5}
+@media(max-width:760px),(pointer:coarse){#sat-proximity{top:36%;gap:7px;padding:12px}#sat-proximity strong{font-size:14px}#sat-proximity>span{font-size:11px}.mobile-game.sat-active #world-interaction{bottom:calc(var(--mobile-bottom) + 170px)}}
+@media(max-height:550px) and (orientation:landscape){#sat-proximity{top:40%;width:min(300px,42vw);padding:10px;gap:6px}#sat-proximity button{min-height:44px;padding:8px 12px}}

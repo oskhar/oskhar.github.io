@@ -85,6 +85,7 @@ export class SatelliteWorld extends InteractiveLocation{
  }
  updateTransition(dt){const d=this.docking;if(!d)return;d.elapsed+=dt;const t=Math.min(1,d.elapsed/2.4),p=t*t*(3-2*t),u=this.universe;u.camera.position.copy(d.curve.getPointAt(p));const target=d.curve.getPointAt(Math.min(1,p+.045));if(t>.85)target.lerp(new THREE.Vector3(0,1.85,0),(t-.85)/.15);const direction=target.sub(u.camera.position).normalize(),rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.asin(THREE.MathUtils.clamp(direction.y,-1,1)),Math.atan2(-direction.x,-direction.z),0,'YXZ'));u.camera.quaternion.slerp(rotation,1-Math.exp(-dt*8));if(t===1){this.docking=null;this.garageOpen=false;u.look={yaw:0,pitch:0};u.camera.position.set(0,1.85,11);u.camera.rotation.set(0,0,0);}}
 
+ nearbyInteraction(position){return this.interactables.filter(item=>position.distanceTo(item.anchor.position)<=item.activationDistance).sort((a,b)=>position.distanceToSquared(a.anchor.position)-position.distanceToSquared(b.anchor.position))[0]||null;}
  scanReady(){const s=this.flightState;return this.driving&&this.nearSector>=0&&Math.abs(s.speed)<10&&Math.abs(s.vertical)<5;}
  scan(){if(!this.scanReady())return -1;this.markDiscovered(this.nearSector);this.flightState.speed=0;this.flightState.vertical=0;return this.nearSector;}
  blocked(x,y,z){const p=new THREE.Vector3(x,y,z);return this.spaceSolids.some(box=>p.x>box.min.x-2&&p.x<box.max.x+2&&p.y>box.min.y-1.5&&p.y<box.max.y+1.5&&p.z>box.min.z-2&&p.z<box.max.z+2);}

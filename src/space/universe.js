@@ -275,6 +275,7 @@ export class Universe {
     }
     if(!item){const forward=this.camera.getWorldDirection(new THREE.Vector3());const nearest=this.world.interactables.map(i=>{const delta=i.anchor.position.clone().sub(this.camera.position);return {item:i,distance:delta.length(),alignment:delta.normalize().dot(forward)};}).filter(i=>i.alignment>.65&&i.distance<=i.item.activationDistance).sort((a,b)=>a.distance-b.distance)[0];if(nearest?.distance<2.5)item=nearest.item;}}
    if(!this.seated&&!this.world.driving){const boarding=this.world.berth?.boarding;if(boarding&&this.camera.position.distanceTo(boarding.anchor.position)<=boarding.activationDistance)item=boarding;}
+   if(!item&&!this.seated&&!this.world.driving&&!this.world.garageOpen&&!this.world.mapOpen)item=this.world.nearbyInteraction?.(this.camera.position)||null;
    const identifier=item?.id||null;if(identifier!==this.focusedExhibit){this.focusedExhibit=identifier;this.onExhibit?.(item?{item}:null);}
    this.world.update(this.motion?dt:0,this.motion?time:0,this.camera,this.focusedExhibit);
   }
